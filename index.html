@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VisionarIA · Diagnóstico Gratuito</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --negro:#0E0E0E;
+    --negro-card:#161616;
+    --dorado:#C9A84C;
+    --dorado-claro:#E4C77A;
+    --plateado:#A8A8A8;
+    --verde:#A4E000;
+    --verde-suave:#7BB300;
+    --borde:#2A2A2A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:'Sora',sans-serif;
+    background:var(--negro);
+    color:#fff;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px 16px;
+    position:relative;
+    overflow-x:hidden;
+  }
+  /* Fondo con circuitos sutiles */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(164,224,0,0.06), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(201,168,76,0.08), transparent 40%);
+    pointer-events:none;
+    z-index:0;
+  }
+  .card{
+    position:relative;
+    z-index:1;
+    width:100%;
+    max-width:520px;
+    background:var(--negro-card);
+    border:1px solid var(--borde);
+    border-radius:20px;
+    padding:38px 30px;
+    box-shadow:0 0 60px rgba(0,0,0,0.6), 0 0 1px var(--dorado);
+    animation:aparece .6s ease-out;
+  }
+  @keyframes aparece{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .logo{display:block;margin:0 auto 18px;width:120px;height:120px;object-fit:contain;
+    filter:drop-shadow(0 0 14px rgba(164,224,0,0.25));}
+  h1{
+    text-align:center;
+    font-size:1.5rem;
+    font-weight:800;
+    line-height:1.25;
+    margin-bottom:8px;
+  }
+  h1 .verde{color:var(--verde)}
+  h1 .dorado{color:var(--dorado)}
+  .sub{
+    text-align:center;
+    color:var(--plateado);
+    font-size:.92rem;
+    margin-bottom:26px;
+    line-height:1.5;
+  }
+  .divisor{
+    height:2px;width:60px;margin:0 auto 26px;border-radius:2px;
+    background:linear-gradient(90deg,var(--dorado),var(--verde));
+  }
+  label{
+    display:block;
+    font-size:.82rem;
+    color:var(--dorado-claro);
+    margin-bottom:7px;
+    font-weight:600;
+    letter-spacing:.3px;
+  }
+  .campo{margin-bottom:18px}
+  input,select,textarea{
+    width:100%;
+    background:#0E0E0E;
+    border:1px solid var(--borde);
+    border-radius:11px;
+    padding:13px 14px;
+    color:#fff;
+    font-family:'Sora',sans-serif;
+    font-size:.95rem;
+    transition:border-color .2s, box-shadow .2s;
+  }
+  textarea{resize:vertical;min-height:78px}
+  input::placeholder,textarea::placeholder{color:#5a5a5a}
+  input:focus,select:focus,textarea:focus{
+    outline:none;
+    border-color:var(--verde);
+    box-shadow:0 0 0 3px rgba(164,224,0,0.12);
+  }
+  select{cursor:pointer;appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23C9A84C' viewBox='0 0 16 16'><path d='M8 11L3 6h10z'/></svg>");
+    background-repeat:no-repeat;background-position:right 14px center;}
+  .btn{
+    width:100%;
+    border:none;
+    border-radius:11px;
+    padding:15px;
+    font-family:'Sora',sans-serif;
+    font-size:1rem;
+    font-weight:700;
+    color:#0E0E0E;
+    background:linear-gradient(90deg,var(--dorado),var(--verde));
+    cursor:pointer;
+    margin-top:8px;
+    transition:transform .15s, box-shadow .2s;
+    box-shadow:0 6px 20px rgba(164,224,0,0.18);
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(164,224,0,0.32)}
+  .btn:active{transform:translateY(0)}
+  .nota{
+    text-align:center;
+    color:#666;
+    font-size:.74rem;
+    margin-top:16px;
+    font-family:'Space Mono',monospace;
+  }
+  .error{border-color:#e0564a !important}
+  .msg-error{color:#e0564a;font-size:.78rem;margin-top:5px;display:none}
+  .pie{
+    text-align:center;margin-top:22px;color:var(--plateado);font-size:.78rem;
+  }
+  .pie span{color:var(--dorado)}
+</style>
+</head>
+<body>
+  <div class="card">
+    <img src="logo.png" alt="VisionarIA" class="logo">
+    <h1>Agendá tu <span class="dorado">diagnóstico</span> <span class="verde">gratuito</span></h1>
+    <p class="sub">30 minutos sin costo. Identificamos qué automatizar primero en tu negocio y cuánto podés ahorrar en tiempo.</p>
+    <div class="divisor"></div>
+
+    <form id="form">
+      <div class="campo">
+        <label for="nombre">¿Cómo te llamás?</label>
+        <input type="text" id="nombre" placeholder="Tu nombre y apellido">
+        <div class="msg-error">Por favor escribí tu nombre.</div>
+      </div>
+
+      <div class="campo">
+        <label for="whatsapp">Tu número de WhatsApp</label>
+        <input type="tel" id="whatsapp" placeholder="Ej: 0994 365 684">
+        <div class="msg-error">Necesitamos tu WhatsApp para contactarte.</div>
+      </div>
+
+      <div class="campo">
+        <label for="negocio">¿Qué tipo de negocio tenés?</label>
+        <input type="text" id="negocio" placeholder="Ej: tienda de ropa, clínica, restaurante...">
+        <div class="msg-error">Contanos qué negocio tenés.</div>
+      </div>
+
+      <div class="campo">
+        <label for="automatizar">¿Qué te gustaría automatizar o mejorar?</label>
+        <textarea id="automatizar" placeholder="Ej: responder mensajes más rápido, no perder clientes, agendar turnos..."></textarea>
+        <div class="msg-error">Contanos qué querés mejorar.</div>
+      </div>
+
+      <div class="campo">
+        <label for="volumen">¿Cuántos mensajes o clientes manejás por día (aprox)?</label>
+        <select id="volumen">
+          <option value="">Elegí una opción</option>
+          <option value="Menos de 10 por día">Menos de 10 por día</option>
+          <option value="Entre 10 y 30 por día">Entre 10 y 30 por día</option>
+          <option value="Entre 30 y 100 por día">Entre 30 y 100 por día</option>
+          <option value="Más de 100 por día">Más de 100 por día</option>
+        </select>
+        <div class="msg-error">Elegí una opción.</div>
+      </div>
+
+      <button type="submit" class="btn">Enviar y hablar por WhatsApp →</button>
+      <p class="nota">Tus datos van directo a Claudia. Sin spam.</p>
+    </form>
+
+    <div class="pie">VisionarIA · IA con sentido · <span>Ciudad del Este</span></div>
+  </div>
+
+<script>
+  // ⚙️ NÚMERO DE WHATSAPP DE LA AGENCIA (formato internacional sin + ni espacios)
+  const WHATSAPP = "595994408879";
+
+  const form = document.getElementById('form');
+  const campos = ['nombre','whatsapp','negocio','automatizar','volumen'];
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    let valido = true;
+
+    campos.forEach(function(id){
+      const el = document.getElementById(id);
+      const err = el.parentElement.querySelector('.msg-error');
+      if(!el.value.trim()){
+        el.classList.add('error');
+        err.style.display = 'block';
+        valido = false;
+      } else {
+        el.classList.remove('error');
+        err.style.display = 'none';
+      }
+    });
+
+    if(!valido) return;
+
+    const nombre = document.getElementById('nombre').value.trim();
+    const whatsapp = document.getElementById('whatsapp').value.trim();
+    const negocio = document.getElementById('negocio').value.trim();
+    const automatizar = document.getElementById('automatizar').value.trim();
+    const volumen = document.getElementById('volumen').value;
+
+    const mensaje =
+      "Hola Claudia! Quiero agendar mi diagnóstico gratuito de VisionarIA.%0A%0A" +
+      "*Nombre:* " + encodeURIComponent(nombre) + "%0A" +
+      "*WhatsApp:* " + encodeURIComponent(whatsapp) + "%0A" +
+      "*Negocio:* " + encodeURIComponent(negocio) + "%0A" +
+      "*Quiero mejorar:* " + encodeURIComponent(automatizar) + "%0A" +
+      "*Volumen diario:* " + encodeURIComponent(volumen);
+
+    const url = "https://wa.me/" + WHATSAPP + "?text=" + mensaje;
+    window.open(url, "_blank");
+  });
+</script>
+</body>
+</html>
