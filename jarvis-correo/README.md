@@ -114,6 +114,12 @@ Claude de verdad y el brief lo escribe él.
 
 ## Ponerlo en producción
 
+> Si lo vas a dejar corriendo en una mini PC o un servidor propio, seguí
+> **[DESPLIEGUE.md](./DESPLIEGUE.md)**: túnel de Cloudflare para llegar desde
+> Indonesia sin abrir puertos, servicio de systemd, respaldo y mantenimiento.
+> Lo de acá abajo son las credenciales que hacen falta en cualquier caso.
+
+
 ### 1. Clave de Claude
 
 `console.anthropic.com` → API Keys → copiala en `ANTHROPIC_API_KEY`.
