@@ -1,4 +1,4 @@
-/* Jarvis del correo — front. Sin build, sin framework. */
+/* Asistente Clau — front. Sin build, sin framework. */
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
@@ -68,9 +68,10 @@ speechSynthesis?.addEventListener?.('voiceschanged', () => {
 });
 vozElegida = elegirVoz();
 
-function hablar(texto, { alTerminar } = {}) {
+function hablarNavegador(texto, { alTerminar } = {}) {
   if (!('speechSynthesis' in window)) {
     aviso('Este navegador no puede hablar. Probá con Chrome.', 'mal');
+    alTerminar?.();
     return;
   }
   speechSynthesis.cancel();
@@ -96,11 +97,7 @@ function hablar(texto, { alTerminar } = {}) {
     u.rate = 1.02;
     u.pitch = 1;
     if (i === trozos.length - 1) {
-      u.onend = () => {
-        estado.hablando = false;
-        alTerminar?.();
-      };
-      u.onerror = () => {
+      u.onend = u.onerror = () => {
         estado.hablando = false;
         alTerminar?.();
       };
@@ -109,8 +106,59 @@ function hablar(texto, { alTerminar } = {}) {
   });
 }
 
+/* El audio de ElevenLabs se guarda por texto: volver a tocar play no vuelve
+   a pedirlo, ni al servidor ni a la API. */
+const audiosLocales = new Map();
+let audioSonando = null;
+
+/**
+ * Lee un texto en voz alta. Usa la voz de ElevenLabs si está configurada;
+ * si falla por lo que sea, cae en la del navegador en vez de quedarse muda.
+ */
+async function hablar(texto, { alTerminar, alGenerar } = {}) {
+  callar();
+  if (!estado.datos?.vozNube) return hablarNavegador(texto, { alTerminar });
+
+  try {
+    let url = audiosLocales.get(texto);
+    if (!url) {
+      alGenerar?.(true);
+      const res = await fetch('/api/voz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texto }),
+      });
+      if (!res.ok) {
+        const { error } = await res.json().catch(() => ({}));
+        throw new Error(error || `error ${res.status}`);
+      }
+      url = URL.createObjectURL(await res.blob());
+      audiosLocales.set(texto, url);
+      alGenerar?.(false);
+    }
+
+    const audio = new Audio(url);
+    audioSonando = audio;
+    estado.hablando = true;
+    audio.onended = audio.onerror = () => {
+      estado.hablando = false;
+      audioSonando = null;
+      alTerminar?.();
+    };
+    await audio.play();
+  } catch (err) {
+    alGenerar?.(false);
+    aviso(`Voz en la nube: ${err.message}. Uso la del navegador.`, 'mal');
+    hablarNavegador(texto, { alTerminar });
+  }
+}
+
 function callar() {
   speechSynthesis?.cancel();
+  if (audioSonando) {
+    audioSonando.pause();
+    audioSonando = null;
+  }
   estado.hablando = false;
   $$('.escuchar').forEach((b) => b.classList.remove('sonando'));
 }
@@ -389,11 +437,19 @@ function vistaAjustes() {
 
     <div class="bloque">
       <h3>Voz</h3>
-      <p>Voz elegida: ${esc(vozElegida?.name || 'la del sistema')}</p>
+      <p>${
+        d.vozNube
+          ? 'Está usando una voz de ElevenLabs. Suena como una persona.'
+          : d.vozConfigurable
+          ? 'ElevenLabs está conectado pero falta elegir una voz. Tocá "Cambiar voz".'
+          : `Voz del navegador: ${esc(vozElegida?.name || 'la del sistema')}. Suena robótica. Para que suene humana, cargá ELEVENLABS_API_KEY en el .env.`
+      }</p>
       <div class="acciones">
         <button id="btnProbarVoz">Probar cómo suena</button>
+        ${d.vozConfigurable ? '<button id="btnCambiarVoz">Cambiar voz</button>' : ''}
         <button id="btnCallar">Callar</button>
       </div>
+      <div id="listaVoces"></div>
     </div>
 
     ${
@@ -742,6 +798,62 @@ async function enviarPregunta(texto, porVoz) {
   }
 }
 
+// ─── Elegir la voz ──────────────────────────────────────────────────────
+async function mostrarVoces() {
+  const cont = $('#listaVoces');
+  if (!cont) return;
+  if (cont.dataset.abierto === '1') {
+    cont.innerHTML = '';
+    cont.dataset.abierto = '0';
+    return;
+  }
+  cont.dataset.abierto = '1';
+  cont.innerHTML = '<div class="cargando" style="padding:24px 0"><div class="spinner"></div><span>Buscando voces…</span></div>';
+
+  let voces;
+  try {
+    voces = await api('/voces');
+  } catch (err) {
+    cont.innerHTML = `<p style="color:var(--rojo);font-size:.82rem;margin-top:12px">${esc(err.message)}</p>`;
+    return;
+  }
+
+  if (!voces.length) {
+    cont.innerHTML = '<p style="color:var(--gris);font-size:.82rem;margin-top:12px">Tu cuenta de ElevenLabs no tiene ninguna voz.</p>';
+    return;
+  }
+
+  cont.innerHTML = `
+    <p style="color:var(--gris-suave);font-size:.76rem;margin:14px 0 10px">
+      Tocá ▶ para escucharla, y "Usar esta" para dejarla fija.
+    </p>
+    ${voces
+      .map(
+        (v) => `
+      <div class="voz-fila ${v.elegida ? 'elegida' : ''}">
+        <button class="voz-muestra" data-muestra="${esc(v.muestra)}" aria-label="Escuchar ${esc(v.nombre)}">▶</button>
+        <div class="voz-datos">
+          <b>${esc(v.nombre)}</b>
+          <small>${esc([v.idioma, v.descripcion].filter(Boolean).join(' · ') || 'sin etiquetas')}</small>
+        </div>
+        ${
+          v.elegida
+            ? '<span class="voz-marca">en uso</span>'
+            : `<button class="voz-usar" data-usar="${esc(v.id)}">Usar esta</button>`
+        }
+      </div>`
+      )
+      .join('')}`;
+}
+
+let muestraSonando = null;
+function probarMuestra(url) {
+  muestraSonando?.pause();
+  if (!url) return aviso('Esa voz no trae muestra.', 'mal');
+  muestraSonando = new Audio(url);
+  muestraSonando.play().catch(() => aviso('No pude reproducir la muestra.', 'mal'));
+}
+
 // ─── Eventos globales ───────────────────────────────────────────────────
 document.addEventListener('click', async (e) => {
   const abrir = e.target.closest('[data-abrir]');
@@ -795,11 +907,13 @@ document.addEventListener('click', async (e) => {
       return;
     }
     btn.classList.add('sonando');
-    btn.querySelector('.icono').textContent = '❚❚';
+    const icono = btn.querySelector('.icono');
+    icono.textContent = '❚❚';
     hablar(estado.brief.guion_voz, {
+      alGenerar: (generando) => { icono.textContent = generando ? '⋯' : '❚❚'; },
       alTerminar: () => {
         btn.classList.remove('sonando');
-        btn.querySelector('.icono').textContent = '▶';
+        icono.textContent = '▶';
       },
     });
     return;
@@ -837,7 +951,36 @@ document.addEventListener('click', async (e) => {
   }
 
   if (e.target.closest('#btnProbarVoz')) {
-    return hablar('Hola. Así te voy a leer los correos. Si querés otra voz, cambiala en los ajustes del teléfono.');
+    const btn = e.target.closest('#btnProbarVoz');
+    const antes = btn.textContent;
+    return hablar(
+      'Hola. Así te voy a leer los correos cada mañana. Si esta voz no te gusta, cambiala acá abajo.',
+      {
+        alGenerar: (generando) => { btn.textContent = generando ? 'Generando…' : antes; },
+        alTerminar: () => { btn.textContent = antes; },
+      }
+    );
+  }
+
+  if (e.target.closest('#btnCambiarVoz')) return mostrarVoces();
+
+  const muestra = e.target.closest('[data-muestra]');
+  if (muestra) return probarMuestra(muestra.dataset.muestra);
+
+  const usar = e.target.closest('[data-usar]');
+  if (usar) {
+    try {
+      await api('/voces/elegir', { method: 'POST', body: { voiceId: usar.dataset.usar } });
+      audiosLocales.clear();          // la voz cambió: el audio viejo ya no sirve
+      aviso('Voz cambiada.', 'bien');
+      await cargar({ conBrief: false });
+      estado.vista = 'ajustes';
+      pintar();
+      mostrarVoces();
+    } catch (err) {
+      aviso(err.message, 'mal');
+    }
+    return;
   }
   if (e.target.closest('#btnCallar')) return callar();
 

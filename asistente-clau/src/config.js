@@ -16,6 +16,16 @@ export const config = {
     hasKey: Boolean(process.env.ANTHROPIC_API_KEY),
   },
 
+  eleven: {
+    apiKey: process.env.ELEVENLABS_API_KEY || '',
+    // Se puede cambiar desde Ajustes; esto es sólo el valor inicial.
+    voiceId: process.env.ELEVENLABS_VOICE_ID || '',
+    // multilingual_v2 es el de mejor calidad en español (USD 0,10 / 1000 caracteres).
+    // flash_v2_5 sale la mitad y es más rápido, con algo menos de matiz.
+    modelId: process.env.ELEVENLABS_MODEL_ID || 'eleven_multilingual_v2',
+    formato: process.env.ELEVENLABS_FORMAT || 'mp3_44100_128',
+  },
+
   ms: {
     clientId: process.env.MS_CLIENT_ID || '',
     clientSecret: process.env.MS_CLIENT_SECRET || '',
@@ -41,5 +51,5 @@ export const config = {
 
   syncIntervalMs: int(process.env.SYNC_INTERVAL_MIN, 10) * 60_000,
 
-  dbPath: process.env.DB_PATH || new URL('../data/jarvis.db', import.meta.url).pathname,
+  dbPath: process.env.DB_PATH || new URL('../data/clau.db', import.meta.url).pathname,
 };

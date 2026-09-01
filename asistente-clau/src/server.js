@@ -20,6 +20,7 @@ import { runSync, startSyncLoop, syncState } from './sync.js';
 import { generateBrief } from './ai/brief.js';
 import { ask } from './ai/ask.js';
 import { draftReply } from './ai/draft.js';
+import { sintetizar, listarVoces, elegirVoz, vozDisponible, vozActual } from './ai/voz.js';
 import { getAuthUrl, handleCallback, connectedAccount, disconnect } from './graph/auth.js';
 import { createReplyDraft } from './graph/mail.js';
 import { overlapWindow, humanAgo, clockIn, longDate, dayKey } from './util/time.js';
@@ -32,7 +33,7 @@ await app.register(fastifyCookie, { secret: config.sessionSecret });
 await app.register(fastifyStatic, { root: join(here, '..', 'public'), index: 'index.html' });
 
 // ── sesión ────────────────────────────────────────────────────────────────
-const SESSION_COOKIE = 'jarvis_sesion';
+const SESSION_COOKIE = 'clau_sesion';
 
 function safeEqual(a, b) {
   const ba = Buffer.from(String(a));
@@ -139,6 +140,8 @@ app.get('/api/estado', async () => {
     outlook: config.demo ? { demo: true } : connectedAccount(),
     outlookConfigurado: config.ms.configured,
     claudeConfigurado: config.anthropic.hasKey,
+    vozNube: vozDisponible() && Boolean(vozActual()),
+    vozConfigurable: vozDisponible(),
     sync: syncState(),
     reloj: {
       ...overlapWindow(now),
@@ -249,6 +252,37 @@ app.post('/api/desconectar', async () => {
   return { ok: true };
 });
 
+// ── voz ───────────────────────────────────────────────────────────────────
+app.post('/api/voz', async (req, reply) => {
+  const { texto } = req.body ?? {};
+  if (!texto?.trim()) return reply.code(400).send({ error: 'Falta el texto' });
+  try {
+    const { audio, cacheado } = await sintetizar(texto);
+    return reply
+      .type('audio/mpeg')
+      .header('Cache-Control', 'private, max-age=86400')
+      .header('X-Voz-Cacheada', cacheado ? '1' : '0')
+      .send(audio);
+  } catch (err) {
+    return reply.code(502).send({ error: err.message });
+  }
+});
+
+app.get('/api/voces', async (req, reply) => {
+  try {
+    return await listarVoces();
+  } catch (err) {
+    return reply.code(502).send({ error: err.message });
+  }
+});
+
+app.post('/api/voces/elegir', async (req, reply) => {
+  const { voiceId } = req.body ?? {};
+  if (!voiceId) return reply.code(400).send({ error: 'Falta la voz' });
+  elegirVoz(voiceId);
+  return { ok: true, voiceId };
+});
+
 // ── OAuth de Microsoft ────────────────────────────────────────────────────
 app.get('/auth/login', async (req, reply) => {
   if (!isLoggedIn(req)) return reply.redirect('/');
@@ -288,7 +322,7 @@ app.setNotFoundHandler((req, reply) => {
 
 const start = async () => {
   await app.listen({ port: config.port, host: config.host });
-  console.log(`\n  Jarvis del correo escuchando en http://localhost:${config.port}`);
+  console.log(`\n  Asistente Clau escuchando en http://localhost:${config.port}`);
   if (config.demo) console.log('  MODO DEMO: correos de mentira, no toca Outlook.');
   if (!config.anthropic.hasKey) console.log('  ⚠ Falta ANTHROPIC_API_KEY: no va a poder analizar ni hablar.');
   if (!config.demo && !config.ms.configured) console.log('  ⚠ Falta configurar Microsoft: mirá el README.');

@@ -1,6 +1,6 @@
 /* Cachea el armazón de la app para que abra al toque, incluso sin señal.
    Los datos del correo siempre van a la red: nunca se guardan acá. */
-const CACHE = 'jarvis-v1';
+const CACHE = 'clau-v1';
 const ARMAZON = ['/', '/index.html', '/styles.css', '/app.js', '/icon.svg', '/icon.png', '/manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {

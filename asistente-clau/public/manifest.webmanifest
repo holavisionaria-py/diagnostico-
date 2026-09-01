@@ -1,6 +1,6 @@
 {
-  "name": "Jarvis · tu correo",
-  "short_name": "Jarvis",
+  "name": "Asistente Clau",
+  "short_name": "Clau",
   "description": "Tu correo de trabajo, ordenado y hablado.",
   "start_url": "/",
   "scope": "/",

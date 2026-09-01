@@ -10,7 +10,7 @@ Cloudflare le da una URL pública con certificado. Funciona incluso detrás del
 NAT del proveedor, que es lo normal en una conexión hogareña.
 
 ```
-Teléfono (Indonesia)  →  https://jarvis.tudominio.com  →  Cloudflare
+Teléfono (Indonesia)  →  https://clau.tudominio.com  →  Cloudflare
                                                               │ túnel saliente
                                                               ▼
                                                    mini PC (Paraguay) :3000
@@ -42,10 +42,10 @@ sudo apt install -y nodejs
 ## 2. Bajar el código
 
 ```bash
-sudo mkdir -p /opt/jarvis && sudo chown $USER:$USER /opt/jarvis
+sudo mkdir -p /opt/clau && sudo chown $USER:$USER /opt/clau
 git clone -b claude/email-assistant-novia-xft13u \
-  https://github.com/holavisionaria-py/diagnostico-.git /opt/jarvis
-cd /opt/jarvis/jarvis-correo
+  https://github.com/holavisionaria-py/diagnostico-.git /opt/clau
+cd /opt/clau/asistente-clau
 npm install --omit=dev
 ```
 
@@ -75,10 +75,11 @@ Lo que tenés que completar:
 
 ```ini
 ANTHROPIC_API_KEY=sk-ant-...          # console.anthropic.com → API Keys
+ELEVENLABS_API_KEY=...                # elevenlabs.io → Profile → API Key
 MS_CLIENT_ID=...                      # los tres de Azure, paso 5
 MS_CLIENT_SECRET=...
 MS_TENANT_ID=...
-MS_REDIRECT_URI=https://jarvis.tudominio.com/auth/callback
+MS_REDIRECT_URI=https://clau.tudominio.com/auth/callback
 
 APP_PASSWORD=...                      # frase larga, mirá la nota de abajo
 SESSION_SECRET=...                    # generala con el comando de acá abajo
@@ -86,6 +87,10 @@ SESSION_SECRET=...                    # generala con el comando de acá abajo
 HER_NAME=...                          # su nombre
 HER_EMAIL=...                         # su correo de trabajo, en minúsculas
 ```
+
+La voz **no** se configura acá: una vez que la app está andando, entrás a
+**Ajustes → Voz → Cambiar voz**, escuchás las muestras y elegís una. Queda
+guardada en la base.
 
 Para el `SESSION_SECRET`:
 
@@ -95,7 +100,7 @@ openssl rand -base64 48
 
 > **Sobre `APP_PASSWORD`:** es lo único que separa a internet de su bandeja de
 > entrada. Que sea una frase larga, no una palabra. Algo como
-> `briquetas-de-coco-en-yakarta-2026` es mucho mejor que `jarvis123`.
+> `briquetas-de-coco-en-yakarta-2026` es mucho mejor que `clau123`.
 >
 > `HER_EMAIL` no es cosmético: es cómo la app distingue los mensajes que mandó
 > ella de los que le mandaron. Si está mal, todo el "te toca a vos" se rompe.
@@ -106,7 +111,7 @@ El paso a paso está en el [README](./README.md#2-registrar-la-app-en-microsoft)
 Dos cosas que sólo aplican acá:
 
 - En *Redirect URI* poné directamente la URL pública final
-  (`https://jarvis.tudominio.com/auth/callback`), no la de localhost.
+  (`https://clau.tudominio.com/auth/callback`), no la de localhost.
 - Ese mismo valor va en `MS_REDIRECT_URI`. Tienen que coincidir **carácter por
   carácter** o Microsoft rechaza el login.
 
@@ -124,20 +129,20 @@ sudo dpkg -i /tmp/cf.deb
 cloudflared tunnel login
 
 # Crear el túnel
-cloudflared tunnel create jarvis
+cloudflared tunnel create clau
 
 # Apuntarle un subdominio
-cloudflared tunnel route dns jarvis jarvis.tudominio.com
+cloudflared tunnel route dns clau clau.tudominio.com
 ```
 
 Configuración en `~/.cloudflared/config.yml`:
 
 ```yaml
-tunnel: jarvis
+tunnel: clau
 credentials-file: /home/TU_USUARIO/.cloudflared/TU-TUNNEL-ID.json
 
 ingress:
-  - hostname: jarvis.tudominio.com
+  - hostname: clau.tudominio.com
     service: http://localhost:3000
   - service: http_status:404
 ```
@@ -158,16 +163,16 @@ sudo systemctl enable --now cloudflared
 ## 7. Que la app arranque sola
 
 ```bash
-sudo tee /etc/systemd/system/jarvis.service > /dev/null <<'EOF'
+sudo tee /etc/systemd/system/clau.service > /dev/null <<'EOF'
 [Unit]
-Description=Jarvis del correo
+Description=Asistente Clau
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
 User=TU_USUARIO
-WorkingDirectory=/opt/jarvis/jarvis-correo
+WorkingDirectory=/opt/clau/asistente-clau
 ExecStart=/usr/bin/node --env-file-if-exists=.env src/server.js
 Restart=always
 RestartSec=10
@@ -178,28 +183,28 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
 ProtectHome=read-only
-ReadWritePaths=/opt/jarvis/jarvis-correo/data
+ReadWritePaths=/opt/clau/asistente-clau/data
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-sudo sed -i "s/TU_USUARIO/$USER/" /etc/systemd/system/jarvis.service
+sudo sed -i "s/TU_USUARIO/$USER/" /etc/systemd/system/clau.service
 sudo systemctl daemon-reload
-sudo systemctl enable --now jarvis
-sudo systemctl status jarvis
+sudo systemctl enable --now clau
+sudo systemctl status clau
 ```
 
 Los logs, cuando algo no ande:
 
 ```bash
-journalctl -u jarvis -f          # en vivo
-journalctl -u jarvis -n 100      # las últimas 100 líneas
+journalctl -u clau -f          # en vivo
+journalctl -u clau -n 100      # las últimas 100 líneas
 ```
 
 ## 8. Conectar Outlook
 
-Entrá a `https://jarvis.tudominio.com`, poné la `APP_PASSWORD`, andá a
+Entrá a `https://clau.tudominio.com`, poné la `APP_PASSWORD`, andá a
 **Ajustes → Conectar Outlook** e iniciá sesión con la cuenta de trabajo de ella.
 
 Ojo con esto: el login de Microsoft hay que hacerlo **con su cuenta**. O se lo
@@ -215,7 +220,7 @@ sincronización tarda unos minutos según cuántos hilos tenga.
 
 No se descarga de ninguna tienda. Es una página web que se instala sola:
 
-1. Le pasás el link `https://jarvis.tudominio.com` y la clave.
+1. Le pasás el link `https://clau.tudominio.com` y la clave.
 2. Lo abre en el teléfono y entra.
 3. **Android:** menú del navegador → *Instalar aplicación*.
    **iPhone:** botón compartir → *Agregar a inicio*.
@@ -234,16 +239,19 @@ barra de navegador. Se ve y se usa como cualquier otra app.
 **Actualizar** cuando haya cambios:
 
 ```bash
-cd /opt/jarvis && git pull
-cd jarvis-correo && npm install --omit=dev
-sudo systemctl restart jarvis
+cd /opt/clau && git pull
+cd asistente-clau && npm install --omit=dev
+sudo systemctl restart clau
 ```
 
 **Respaldo.** Todo el estado vive en un solo archivo:
 
 ```bash
-cp /opt/jarvis/jarvis-correo/data/jarvis.db ~/respaldo-jarvis-$(date +%F).db
+cp /opt/clau/asistente-clau/data/clau.db ~/respaldo-clau-$(date +%F).db
 ```
+
+(La carpeta `data/voz/` de al lado es sólo audio cacheado: si la borrás, se
+vuelve a generar sola la próxima vez. No hace falta respaldarla.)
 
 Ese archivo tiene el cuerpo de los correos, así que **es tan sensible como su
 bandeja de entrada**. No lo copies a un Drive compartido ni lo mandes por
@@ -253,9 +261,9 @@ vale la pena cifrarlo.
 **Si algo se rompe**, en orden:
 
 ```bash
-systemctl status jarvis           # ¿está corriendo la app?
+systemctl status clau           # ¿está corriendo la app?
 systemctl status cloudflared      # ¿está parado el túnel?
-journalctl -u jarvis -n 50        # ¿qué dijo el último error?
+journalctl -u clau -n 50        # ¿qué dijo el último error?
 curl -I localhost:3000            # ¿responde en local?
 ```
 
@@ -280,9 +288,9 @@ se reemplaza por Caddy con un certificado automático. El código no cambia en n
 Si la mini PC corre Windows, es lo mismo con dos cambios:
 
 - **Que arranque sola:** en vez de systemd, usá
-  [NSSM](https://nssm.cc/) (`nssm install Jarvis`) apuntando a `node.exe` con
+  [NSSM](https://nssm.cc/) (`nssm install Clau`) apuntando a `node.exe` con
   argumentos `--env-file-if-exists=.env src/server.js` y directorio de trabajo
-  `C:\jarvis\jarvis-correo`.
+  `C:\clau\asistente-clau`.
 - **El túnel:** `cloudflared service install` funciona igual en Windows y queda
   como servicio.
 

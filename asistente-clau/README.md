@@ -1,4 +1,4 @@
-# Jarvis del correo
+# Asistente Clau
 
 Un asistente de correo para alguien que trabaja desde Indonesia con la sede en
 Paraguay, coordinando producción y embarques de briquetas de coco.
@@ -42,7 +42,8 @@ Nada exótico, a propósito: cuanto menos piezas, menos se rompe.
 | Servidor | **Node 22 + Fastify** | Un solo proceso. Sirve la app y la API. |
 | Base | **SQLite** (`node:sqlite`, el módulo nativo de Node) | Un archivo. Cero dependencias compiladas, cero servidor de base de datos. |
 | App | **PWA** en HTML/CSS/JS puro | Se instala en el celular con ícono propio. Sin build, sin npm en el front, sin framework que actualizar. |
-| Voz | **Web Speech API** del navegador | Escuchar (`SpeechSynthesis`) y hablar (`SpeechRecognition`). Gratis, sin API de terceros, sin subir audio a ningún lado. |
+| Voz que sale | **ElevenLabs** (`eleven_multilingual_v2`) | Es lo que hace que se sienta un asistente y no un lector de pantalla. La clave nunca sale del servidor y todo lo sintetizado queda cacheado en disco. Si no está configurada, cae en la voz del navegador. |
+| Voz que entra | **Web Speech API** del navegador | El reconocimiento pasa en el teléfono. Gratis, y el audio de ella nunca se sube a ningún lado. |
 
 ### Cómo fluye
 
@@ -96,7 +97,7 @@ cambió.
 ## Probarlo ahora, sin conectar nada
 
 ```bash
-cd jarvis-correo
+cd asistente-clau
 npm install
 DEMO=1 APP_PASSWORD=probando SESSION_SECRET=cualquier-cosa-larga npm start
 ```
@@ -120,9 +121,12 @@ Claude de verdad y el brief lo escribe él.
 > Lo de acá abajo son las credenciales que hacen falta en cualquier caso.
 
 
-### 1. Clave de Claude
+### 1. Claves
 
-`console.anthropic.com` → API Keys → copiala en `ANTHROPIC_API_KEY`.
+- **Claude**: `console.anthropic.com` → API Keys → va en `ANTHROPIC_API_KEY`.
+- **ElevenLabs** (opcional, pero es la diferencia entre un robot y una persona):
+  `elevenlabs.io` → Profile → API Key → va en `ELEVENLABS_API_KEY`. La voz se
+  elige después desde la app, en **Ajustes → Voz**.
 
 ### 2. Registrar la app en Microsoft
 
@@ -130,7 +134,7 @@ Esto es el único trámite. Se hace una vez.
 
 1. Entrá a [portal.azure.com](https://portal.azure.com) → **Microsoft Entra ID**
    → **App registrations** → **New registration**.
-2. Nombre: `Jarvis correo`. En *Supported account types*, si la empresa tiene su
+2. Nombre: `Asistente Clau`. En *Supported account types*, si la empresa tiene su
    propio Microsoft 365 elegí **Accounts in this organizational directory only**;
    si es una cuenta suelta, **Accounts in any organizational directory and
    personal Microsoft accounts**.
@@ -187,7 +191,7 @@ Queda con ícono propio, pantalla completa, sin barra del navegador.
 ## Dónde vive cada cosa
 
 ```
-jarvis-correo/
+asistente-clau/
 ├── src/
 │   ├── config.js          Todo lo que sale del .env
 │   ├── db.js              SQLite: mensajes, hilos, briefs, chat
@@ -216,12 +220,17 @@ jarvis-correo/
 
 ## Decisiones que vale la pena entender
 
-**La voz no manda audio a ningún lado.** Reconocer y sintetizar pasa en el
-navegador, con la Web Speech API. Cero costo, cero latencia de red, y el audio
-nunca sale del teléfono. La contra: el reconocimiento anda muy bien en Chrome y
-Edge, aceptable en Safari, y nada en Firefox. Si algún día hace falta más
-precisión, el reemplazo natural es grabar el audio y transcribirlo del lado del
-servidor.
+**La voz va por dos caminos distintos, a propósito.** Lo que ella *dice* se
+reconoce en el navegador con la Web Speech API: gratis, y su audio nunca se
+sube a ningún servidor. Lo que la app *le lee* pasa por ElevenLabs, porque la
+voz del navegador suena a GPS de 2010 y eso arruina la sensación de tener un
+asistente. La clave de ElevenLabs vive sólo en el servidor: el navegador le
+pide el audio a esta app, no a ElevenLabs. La contra del reconocimiento: anda
+muy bien en Chrome y Edge, aceptable en Safari, y nada en Firefox.
+
+**El audio se cachea en disco.** Cada texto sintetizado se guarda en
+`data/voz/` con un hash del texto, la voz y el modelo. Volver a tocar play en
+el mismo resumen no vuelve a facturar. El cache se poda solo a los 60 archivos.
 
 **Los correos se guardan localmente.** El SQLite tiene el cuerpo de los mensajes
 para poder buscar y citar sin volver a pegarle a Graph. Ese archivo (`data/`) es
@@ -239,7 +248,12 @@ quedar mal.
 
 **El costo real.** El triage corre a esfuerzo medio y sólo sobre hilos que
 cambiaron; el brief, una vez cada tres horas. Con 40 hilos activos son unos
-pocos centavos de dólar por día. Podés bajarlo más con `TRIAGE_EFFORT=low`.
+pocos centavos de dólar por día. Podés bajarlo con `TRIAGE_EFFORT=low`.
+
+La voz se suma aparte: `eleven_multilingual_v2` cuesta USD 0,10 cada 1000
+caracteres. Un resumen diario de unas 120 palabras son ~700 caracteres, o sea
+unos 7 centavos por día si lo escucha una vez, y menos si repite (el cache no
+vuelve a facturar). `eleven_flash_v2_5` sale la mitad, con algo menos de matiz.
 
 ---
 
@@ -265,6 +279,9 @@ Ideas en orden de cuánto suman por lo que cuestan:
 | `ANTHROPIC_API_KEY` | Clave de Claude. Sin esto no analiza nada. |
 | `ANTHROPIC_MODEL` | Por defecto `claude-opus-5`. |
 | `TRIAGE_EFFORT` | `low` / `medium` / `high`. Por defecto `medium`. |
+| `ELEVENLABS_API_KEY` | Voz humana. Sin esto usa la del navegador. |
+| `ELEVENLABS_VOICE_ID` | Valor inicial. Se cambia desde Ajustes → Voz. |
+| `ELEVENLABS_MODEL_ID` | `eleven_multilingual_v2` (mejor) o `eleven_flash_v2_5` (mitad de precio). |
 | `MS_CLIENT_ID`, `MS_CLIENT_SECRET`, `MS_TENANT_ID` | De Azure. |
 | `MS_REDIRECT_URI` | Tiene que coincidir exacto con el de Azure. |
 | `APP_PASSWORD` | La clave para entrar al panel. |
