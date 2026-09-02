@@ -21,7 +21,7 @@ const BriefSchema = z.object({
   guion_voz: z
     .string()
     .describe(
-      'El brief hablado, para leer en voz alta. 90 a 140 palabras. Arranca saludándola por su nombre y diciendo la hora de ella y la de Paraguay. Después lo urgente. Termina con una sola recomendación de por dónde empezar. Nada de listas ni viñetas: texto corrido, como si se lo contaras tomando un café.'
+      'El brief hablado, para leer en voz alta. 90 a 150 palabras. Arranca saludándola por su nombre y diciendo la hora de ella y la de Paraguay. Después lo urgente. No te limites a listar: sos su asesora, así que meté al menos una observación proactiva propia — un patrón que notás, algo que le conviene hacer, un riesgo que ve venir ("ojo con…", "yo que vos…", "te conviene…"). Terminá con una sola recomendación clara de por dónde empezar. Nada de listas ni viñetas: texto corrido, como si se lo contaras tomando un café.'
     ),
 });
 
@@ -40,6 +40,7 @@ function threadDigest(t, now) {
     a.te_piden.length ? `piden: ${a.te_piden.join(' / ')}` : null,
     a.preguntas_abiertas.length ? `sin responder: ${a.preguntas_abiertas.join(' / ')}` : null,
     a.riesgo_si_no_responde ? `riesgo: ${a.riesgo_si_no_responde}` : null,
+    a.consejo ? `mi consejo sobre esto: ${a.consejo}` : null,
   ]
     .filter(Boolean)
     .join('\n');
@@ -89,6 +90,7 @@ function briefDeReglas(threads, ventana, now) {
     (estas_esperando.length
       ? `Además hay ${plural(estas_esperando.length, 'hilo donde te deben', 'hilos donde te deben')} respuesta a vos. `
       : '') +
+    (urgentes[0]?.a.consejo ? `Un consejo: ${urgentes[0].a.consejo} ` : '') +
     (urgentes[0]
       ? `Si arrancás por algo, que sea esto: ${urgentes[0].a.titulo.toLowerCase()}.`
       : 'Aprovechá para adelantar lo que venías postergando.');

@@ -73,6 +73,8 @@ Rodrigo`,
       bola_en_su_cancha: true,
       riesgo_si_no_responde: 'Se pierde el contenedor y el embarque se atrasa 12 días con anticipo ya cobrado.',
       sentimiento: 'apurado',
+      consejo:
+        'Rodrigo ya te escribió dos veces: mandale aunque sea el packing list ahora y avisale que el resto va en un rato, así deja de escalar.',
       respuesta_sugerida:
         'Rodrigo, perdón la demora. Te mando el packing list en la próxima hora con el peso neto por pallet. Los 18 pallets de 26mm están [CONFIRMAR SI TERMINADOS]. El certificado de fumigación lo pido hoy a la planta y te lo reenvío apenas lo tenga.',
       una_linea_para_voz:
@@ -131,6 +133,8 @@ Ahmad`,
       bola_en_su_cancha: true,
       riesgo_si_no_responde: 'La planta queda parada esperando la decisión y se atrasa el lote siguiente.',
       sentimiento: 'tranquilo',
+      consejo:
+        'Como la humedad está dentro del límite, embarcá y avisale al cliente el número por adelantado: si se entera al llegar, te lo reclama.',
       respuesta_sugerida:
         'Hi Ahmad, thanks for the numbers. Since 6.8% is still within the 8% contract limit, please send batch KJ-0918 as is and keep the next batch on schedule. Let us flag the moisture level to the customer so there is no surprise.',
       una_linea_para_voz:
@@ -192,6 +196,8 @@ Mehmet`,
       bola_en_su_cancha: true,
       riesgo_si_no_responde: 'Queda mal en el primer contacto y se pierde un contrato anual de 24 contenedores.',
       sentimiento: 'tranquilo',
+      consejo:
+        'Es tu primer contacto con Mehmet y ya casi vencés el plazo que vos misma pusiste. Mandá la cotización hoy aunque falte un dato, marcalo como pendiente.',
       respuesta_sugerida:
         'Hi Mehmet, as promised, here is our quotation: [FOB SURABAYA USD/TON], [CIF MERSIN USD/TON], MOQ 1x40HQ, payment 30% T/T advance and 70% against B/L copy. Prices valid for 15 days. Happy to send a free sample box so you can compare stability against your current supplier.',
       una_linea_para_voz:
@@ -244,6 +250,8 @@ Claudia`,
       bola_en_su_cancha: true,
       riesgo_si_no_responde: 'Se pagan intereses sobre USD 41.850 y se enfría la relación con la fábrica.',
       sentimiento: 'tranquilo',
+      consejo:
+        'Antes de dar el OK fijate que el precio unitario coincida con la última orden: si pagás de más, después es un lío recuperarlo.',
       respuesta_sugerida:
         'Claudia, confirmo que la mercadería del lote de septiembre entró conforme y que el precio de USD 1.395 por tonelada es el acordado. Podés dar curso al pago de la INV-2291.',
       una_linea_para_voz: 'Administración no puede pagar la factura de la fábrica hasta que le des el OK, y vence en dos días.',
@@ -279,6 +287,8 @@ Claudia`,
       bola_en_su_cancha: false,
       riesgo_si_no_responde: 'La oportunidad se enfría si nadie vuelve a tocar el tema.',
       sentimiento: 'tranquilo',
+      consejo:
+        'Lena no contesta hace ocho días. Un empujón corto reactiva la venta; si esperás más, se enfría del todo.',
       respuesta_sugerida:
         'Hi Lena, just following up on the sample box (DHL 8842190377) — did it arrive well? Curious to hear how the 26mm cube performed in your burn test.',
       una_linea_para_voz: 'Lena, de Alemania, todavía no te dijo nada de las muestras que mandaste hace ocho días.',
@@ -315,6 +325,8 @@ Claudia`,
       bola_en_su_cancha: true,
       riesgo_si_no_responde: 'El directorio se queda sin el número del mes.',
       sentimiento: 'tranquilo',
+      consejo:
+        'El reporte va a directorio: dejalo listo un día antes, no sobre la hora, que ahí siempre aparece algo urgente.',
       respuesta_sugerida: 'Dale Rodrigo, el viernes lo tenés. Va con toneladas por tipo de cubo y el rechazo de calidad.',
       una_linea_para_voz: 'Rodrigo te recuerda el reporte de producción para el viernes.',
     },

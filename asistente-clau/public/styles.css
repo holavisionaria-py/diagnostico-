@@ -11,9 +11,33 @@
   --texto:#F2F2F0;
   --gris:#8E8E93;
   --gris-suave:#5A5A60;
+  --cuerpo:#C9C9C5;
   --radio:16px;
   --sombra:0 10px 40px rgba(0,0,0,.5);
   --safe-b:env(safe-area-inset-bottom,0px);
+  --brillo-a:rgba(164,224,0,.07);
+  --brillo-b:rgba(201,168,76,.09);
+  color-scheme:dark;
+}
+/* Modo claro: mantiene la identidad oro/verde sobre un blanco cálido. */
+:root[data-tema="claro"]{
+  --negro:#F6F4EE;
+  --panel:#FFFFFF;
+  --panel-2:#F0EDE4;
+  --borde:#E3DFD4;
+  --dorado:#A9832E;
+  --dorado-claro:#8A6A1E;
+  --verde:#5E8A00;
+  --verde-oscuro:#4A6E00;
+  --rojo:#C4392C;
+  --texto:#1C1B18;
+  --gris:#6E6B63;
+  --gris-suave:#9A968C;
+  --cuerpo:#3A3833;
+  --sombra:0 10px 34px rgba(120,110,80,.16);
+  --brillo-a:rgba(164,224,0,.12);
+  --brillo-b:rgba(201,168,76,.16);
+  color-scheme:light;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
@@ -26,13 +50,13 @@ body{
 body::before{
   content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
   background:
-    radial-gradient(circle at 12% 0%,rgba(164,224,0,.07),transparent 45%),
-    radial-gradient(circle at 92% 12%,rgba(201,168,76,.09),transparent 42%);
+    radial-gradient(circle at 12% 0%,var(--brillo-a),transparent 45%),
+    radial-gradient(circle at 92% 12%,var(--brillo-b),transparent 42%);
 }
 button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
 input,textarea{font-family:inherit}
 ::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-thumb{background:#2E2E33;border-radius:3px}
+::-webkit-scrollbar-thumb{background:var(--gris-suave);border-radius:3px}
 
 .app{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:0 16px calc(96px + var(--safe-b))}
 .oculto{display:none !important}
@@ -49,7 +73,7 @@ input,textarea{font-family:inherit}
 #login p{color:var(--gris);font-size:.9rem;margin-bottom:28px}
 #login input{
   width:100%;background:var(--panel);border:1px solid var(--borde);border-radius:12px;
-  padding:15px;color:#fff;font-size:1rem;text-align:center;letter-spacing:2px;
+  padding:15px;color:var(--texto);font-size:1rem;text-align:center;letter-spacing:2px;
 }
 #login input:focus{outline:none;border-color:var(--verde);box-shadow:0 0 0 3px rgba(164,224,0,.12)}
 #login button{
@@ -122,7 +146,7 @@ header{padding:22px 0 14px;position:sticky;top:0;z-index:20;
 .onda i:nth-child(4){animation-delay:.3s}.onda i:nth-child(5){animation-delay:.15s}
 @keyframes onda{0%,100%{height:5px}50%{height:18px}}
 
-.guion{margin-top:14px;color:#CFCFCB;font-size:.92rem;line-height:1.65;
+.guion{margin-top:14px;color:var(--texto);font-size:.92rem;line-height:1.65;
   border-left:2px solid var(--borde);padding-left:14px;cursor:pointer;
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .guion.abierto{-webkit-line-clamp:unset}
@@ -175,7 +199,7 @@ h2.seccion.urgente{color:var(--rojo)}
 .chip.dato{color:var(--dorado-claro);border-color:rgba(201,168,76,.3);font-variant-numeric:tabular-nums}
 .chip.fecha{color:var(--verde)}
 
-.resumen{margin-top:12px;font-size:.88rem;line-height:1.6;color:#C9C9C5}
+.resumen{margin-top:12px;font-size:.88rem;line-height:1.6;color:var(--cuerpo)}
 .piden{margin-top:12px;list-style:none}
 .piden li{
   font-size:.85rem;line-height:1.5;padding-left:18px;position:relative;margin-bottom:5px;color:var(--texto)
@@ -292,7 +316,7 @@ nav .badge{
 
 .bloque{background:var(--panel);border:1px solid var(--borde);border-radius:var(--radio);padding:16px;margin-bottom:12px}
 .bloque h3{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);margin-bottom:10px}
-.bloque p{font-size:.9rem;line-height:1.65;color:#C9C9C5}
+.bloque p{font-size:.9rem;line-height:1.65;color:var(--cuerpo)}
 .bloque ul{list-style:none}
 .bloque ul li{font-size:.87rem;line-height:1.55;padding-left:16px;position:relative;margin-bottom:6px}
 .bloque ul li::before{content:"·";position:absolute;left:4px;color:var(--dorado);font-weight:700}
@@ -302,7 +326,7 @@ nav .badge{
 .msg.deElla::before{background:var(--verde)}
 .msg .quien{font-size:.82rem;font-weight:600}
 .msg .quien small{color:var(--gris-suave);font-weight:400;margin-left:6px;font-size:.72rem}
-.msg .txt{font-size:.85rem;line-height:1.6;color:#B8B8B4;margin-top:6px;white-space:pre-wrap;
+.msg .txt{font-size:.85rem;line-height:1.6;color:var(--cuerpo);margin-top:6px;white-space:pre-wrap;
   max-height:180px;overflow:hidden;position:relative;transition:max-height .3s}
 .msg .txt.abierto{max-height:none}
 .msg .txt:not(.abierto)::after{
@@ -368,4 +392,54 @@ textarea.borrador:focus{outline:none;border-color:var(--verde)}
 .voz-marca{
   flex:none;font-size:.68rem;color:var(--verde);border:1px solid rgba(164,224,0,.35);
   background:rgba(164,224,0,.07);padding:4px 10px;border-radius:999px;
+}
+
+/* ─── Consejo proactivo ─────────────────────────────────────────────── */
+.consejo{
+  display:flex;gap:10px;margin-top:12px;padding:11px 13px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(164,224,0,.06));
+  border:1px solid rgba(201,168,76,.28);
+  font-size:.85rem;line-height:1.55;color:var(--dorado-claro);
+}
+.consejo .lampara{flex:none;font-size:1rem;line-height:1.4;filter:saturate(1.2)}
+.consejo b{color:var(--dorado)}
+/* En el detalle, el consejo va destacado arriba de todo */
+.bloque.consejo-bloque{
+  background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(164,224,0,.07));
+  border-color:rgba(201,168,76,.35);
+}
+.bloque.consejo-bloque p{color:var(--texto)}
+
+/* ─── Toggle de tema ────────────────────────────────────────────────── */
+.tema-toggle{
+  display:flex;gap:6px;margin-top:12px;background:var(--panel-2);
+  border:1px solid var(--borde);border-radius:12px;padding:5px;
+}
+.tema-toggle button{
+  flex:1;padding:9px;border-radius:9px;font-size:.82rem;color:var(--gris);
+  display:flex;align-items:center;justify-content:center;gap:7px;transition:.15s;
+}
+.tema-toggle button.on{
+  background:var(--negro);color:var(--texto);
+  box-shadow:0 1px 3px rgba(0,0,0,.25);font-weight:600;
+}
+.tema-toggle button.on .ico{filter:none}
+.tema-toggle .ico{font-size:1rem}
+
+/* ─── Estado vacío: sin correo conectado ────────────────────────────── */
+.bienvenida{
+  text-align:center;padding:44px 22px;display:flex;flex-direction:column;
+  align-items:center;gap:14px;
+}
+.bienvenida .globo{
+  width:74px;height:74px;border-radius:50%;display:grid;place-items:center;font-size:2rem;
+  background:linear-gradient(135deg,var(--dorado),var(--verde));color:#0B0B0C;
+  box-shadow:0 10px 30px rgba(164,224,0,.25);
+}
+.bienvenida h3{font-size:1.15rem;font-weight:800;line-height:1.3;max-width:22ch}
+.bienvenida p{color:var(--gris);font-size:.9rem;line-height:1.6;max-width:34ch}
+.bienvenida .cta{
+  margin-top:6px;padding:13px 22px;border-radius:12px;font-weight:700;color:#0B0B0C;
+  background:linear-gradient(90deg,var(--dorado),var(--verde));text-decoration:none;
+  display:inline-block;
 }

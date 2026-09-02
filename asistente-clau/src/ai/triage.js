@@ -33,6 +33,16 @@ const AnalisisSchema = z.object({
   bola_en_su_cancha: z.boolean().describe('true si el próximo movimiento le toca a ella'),
   riesgo_si_no_responde: z.string().describe('Qué se rompe si deja pasar esto. Cadena vacía si no pasa nada'),
   sentimiento: z.enum(['tranquilo', 'apurado', 'molesto', 'contento']),
+  consejo: z
+    .string()
+    .describe(
+      'Tu opinión proactiva sobre este hilo, como una asesora con experiencia en comercio exterior de briquetas. ' +
+        'Una o dos frases, en segunda persona (tuteo/voseo). No repitas lo que ya dice el resumen: aportá una mirada. ' +
+        'Ejemplos del tono: "Ojo, este cliente ya te apuró dos veces, conviene cerrarlo hoy antes de que escale." / ' +
+        '"Te conviene pedir el certificado de fumigación en el mismo mail, así no perdés otro día." / ' +
+        '"Este precio está por debajo de lo habitual, verificá con la sede antes de confirmar." ' +
+        'Si de verdad no hay nada útil que aconsejar, dejá la cadena vacía.'
+    ),
   respuesta_sugerida: z.string().describe('Borrador breve de respuesta, en el idioma en que le escribieron'),
   una_linea_para_voz: z.string().describe('Cómo se lo contarías en voz alta en una sola frase corta'),
 });

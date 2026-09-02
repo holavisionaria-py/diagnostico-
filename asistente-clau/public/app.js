@@ -311,6 +311,8 @@ function tarjeta(t, { compacta = false } = {}) {
 
     ${piden.length ? `<ul class="piden">${piden.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}
 
+    ${t.consejo ? `<div class="consejo"><span class="lampara">💡</span><span>${esc(t.consejo)}</span></div>` : ''}
+
     <div class="chips">
       ${t.urgencia === 'alta' ? `<span class="chip alta">urgente</span>` : ''}
       ${t.fecha_limite ? `<span class="chip fecha">vence ${esc(t.fecha_limite)}</span>` : ''}
@@ -319,8 +321,7 @@ function tarjeta(t, { compacta = false } = {}) {
     </div>
 
     <div class="acciones">
-      <button data-escuchar="${esc(t.id)}">🔊 Escuchar</button>
-      <button class="pri" data-abrir="${esc(t.id)}">Responder</button>
+      <button class="pri" data-abrir="${esc(t.id)}">Ver y responder</button>
       <button data-listo="${esc(t.id)}">Listo</button>
       <button class="${t.fijado ? 'on' : ''}" data-fijar="${esc(t.id)}">${t.fijado ? '★' : '☆'}</button>
     </div>
@@ -333,6 +334,24 @@ const vacio = (emo, txt) => `<div class="vacio"><span class="emo">${emo}</span>$
 function vistaHoy() {
   const d = estado.datos;
   const b = estado.brief;
+
+  // Sin correo conectado no hay nada que resumir: mostramos una bienvenida
+  // en vez de dejar el resumen girando para siempre.
+  const correoConectado = d.demo || Boolean(d.outlook?.email);
+  if (!correoConectado) {
+    const nombre = d.ella?.nombre?.split(' ')[0] || '';
+    return `
+      <div class="bienvenida">
+        <div class="globo">📬</div>
+        <h3>${nombre ? `Hola ${esc(nombre)}, ` : ''}conectá tu correo para empezar</h3>
+        <p>Apenas conectes tu Outlook, voy a leer tus mensajes y armarte el resumen del día. Toma un minuto.</p>
+        ${
+          d.outlookConfigurado
+            ? `<a class="cta" href="/auth/login">Conectar mi Outlook</a>`
+            : `<p style="color:var(--gris-suave)">Falta un último paso de configuración en el servidor. Avisale a quien te armó esto.</p>`
+        }
+      </div>`;
+  }
 
   const lista = (items, titulo, clase = '') => {
     if (!items?.length) return '';
@@ -405,7 +424,18 @@ function vistaAjustes() {
     ? `Conectada como ${d.outlook.email}`
     : 'Outlook sin conectar';
 
+  const tema = temaGuardado();
   return `
+    <h2 class="seccion">Apariencia</h2>
+    <div class="bloque">
+      <h3>Tema</h3>
+      <div class="tema-toggle" id="temaToggle">
+        <button data-tema="claro" class="${tema === 'claro' ? 'on' : ''}"><span class="ico">☀️</span> Claro</button>
+        <button data-tema="oscuro" class="${tema === 'oscuro' ? 'on' : ''}"><span class="ico">🌙</span> Oscuro</button>
+        <button data-tema="auto" class="${tema === 'auto' ? 'on' : ''}"><span class="ico">📱</span> Auto</button>
+      </div>
+    </div>
+
     <h2 class="seccion">Conexión</h2>
     <div class="bloque">
       <h3>Correo</h3>
@@ -527,6 +557,11 @@ async function abrirHilo(id) {
       <button data-escuchar="${esc(t.id)}">🔊</button>
     </div>
     <div class="cuerpo">
+      ${
+        t.consejo
+          ? `<div class="bloque consejo-bloque"><h3>💡 Mi consejo</h3><p>${esc(t.consejo)}</p></div>`
+          : ''
+      }
       <div class="bloque">
         <h3>Qué está pasando</h3>
         <p>${esc(t.resumen || 'Sin análisis todavía.')}</p>
@@ -950,6 +985,13 @@ document.addEventListener('click', async (e) => {
     return;
   }
 
+  const btnTema = e.target.closest('#temaToggle [data-tema]');
+  if (btnTema) {
+    elegirTema(btnTema.dataset.tema);
+    $$('#temaToggle button').forEach((b) => b.classList.toggle('on', b === btnTema));
+    return;
+  }
+
   if (e.target.closest('#btnProbarVoz')) {
     const btn = e.target.closest('#btnProbarVoz');
     const antes = btn.textContent;
@@ -1025,6 +1067,41 @@ setInterval(() => {
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && estado.datos) cargar({ conBrief: false }).catch(() => {});
 });
+
+// ─── Tema claro / oscuro ─────────────────────────────────────────────────
+function aplicarTema(tema) {
+  // tema: 'oscuro' | 'claro' | 'auto'
+  const raiz = document.documentElement;
+  let efectivo = tema;
+  if (tema === 'auto') {
+    efectivo = window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'claro' : 'oscuro';
+  }
+  if (efectivo === 'claro') raiz.setAttribute('data-tema', 'claro');
+  else raiz.removeAttribute('data-tema');
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', efectivo === 'claro' ? '#F6F4EE' : '#0B0B0C');
+}
+
+function temaGuardado() {
+  try {
+    return localStorage.getItem('clau_tema') || 'oscuro';
+  } catch {
+    return 'oscuro';
+  }
+}
+
+function elegirTema(tema) {
+  try {
+    localStorage.setItem('clau_tema', tema);
+  } catch {}
+  aplicarTema(tema);
+}
+
+aplicarTema(temaGuardado());
+if (window.matchMedia) {
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+    if (temaGuardado() === 'auto') aplicarTema('auto');
+  });
+}
 
 // ─── Arranque ───────────────────────────────────────────────────────────
 (async () => {
