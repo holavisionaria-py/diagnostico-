@@ -32,6 +32,28 @@ const app = Fastify({ logger: { level: process.env.LOG_LEVEL || 'warn' } });
 await app.register(fastifyCookie, { secret: config.sessionSecret });
 await app.register(fastifyStatic, { root: join(here, '..', 'public'), index: 'index.html' });
 
+// ── anti-caché ──────────────────────────────────────────────────────────────
+// Cloudflare (y cualquier proxy o navegador en el medio) NO debe guardar las
+// respuestas de la API ni el HTML: eso hacía que una respuesta de "sesión
+// iniciada" quedara cacheada y se le sirviera a todo el mundo, rompiendo el
+// login. Todo lo dinámico se marca como no-cacheable; los assets con hash de
+// versión (?v=) sí pueden cachearse.
+app.addHook('onSend', async (req, reply, payload) => {
+  const p = req.url.split('?')[0];
+  const dinamico =
+    p.startsWith('/api') ||
+    p.startsWith('/auth') ||
+    p === '/' ||
+    p.endsWith('.html') ||
+    p.endsWith('/sw.js');
+  if (dinamico) {
+    reply.header('Cache-Control', 'no-store, no-cache, must-revalidate');
+    reply.header('CDN-Cache-Control', 'no-store');
+    reply.header('Cloudflare-CDN-Cache-Control', 'no-store');
+  }
+  return payload;
+});
+
 // ── sesión ────────────────────────────────────────────────────────────────
 const SESSION_COOKIE = 'clau_sesion';
 
