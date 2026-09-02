@@ -1,6 +1,8 @@
-/* Cachea el armazón de la app para que abra al toque, incluso sin señal.
-   Los datos del correo siempre van a la red: nunca se guardan acá. */
-const CACHE = 'clau-v1';
+/* Guarda el armazón de la app para que abra sin señal, pero SIEMPRE prioriza
+   la versión de la red: así los cambios que subimos se ven en cuanto recarga,
+   sin quedar pegada a una copia vieja. La copia sólo entra a jugar si no hay
+   internet. Los datos del correo nunca se cachean. */
+const CACHE = 'clau-v2';
 const ARMAZON = ['/', '/index.html', '/styles.css', '/app.js', '/icon.svg', '/icon.png', '/manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
@@ -18,18 +20,20 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
 
-  // Nada de la API se cachea: siempre red.
+  // La API y el login siempre van directo a la red, nunca se cachean.
   if (url.pathname.startsWith('/api') || url.pathname.startsWith('/auth')) return;
 
+  // Red primero: si responde, esa es la versión que se ve y se guarda de respaldo.
+  // Si no hay internet, recién ahí usamos la copia guardada.
   e.respondWith(
-    caches.match(e.request).then((hit) => {
-      const red = fetch(e.request)
-        .then((res) => {
-          if (res.ok) caches.open(CACHE).then((c) => c.put(e.request, res.clone()));
-          return res;
-        })
-        .catch(() => hit ?? caches.match('/index.html'));
-      return hit ?? red;
-    })
+    fetch(e.request)
+      .then((res) => {
+        if (res.ok) {
+          const copia = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, copia));
+        }
+        return res;
+      })
+      .catch(() => caches.match(e.request).then((hit) => hit ?? caches.match('/index.html')))
   );
 });
