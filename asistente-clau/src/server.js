@@ -161,6 +161,16 @@ app.get('/api/estado', async () => {
     ella: { nombre: config.her.name, email: config.her.email },
     outlook: config.demo ? { demo: true } : connectedAccount(),
     outlookConfigurado: config.ms.configured,
+    // Correo genérico: puede venir por IMAP o por Outlook.
+    correo: {
+      proveedor: config.demo ? 'demo' : config.proveedorCorreo,
+      conectado: config.demo || config.proveedorCorreo === 'imap' || Boolean(connectedAccount()?.email),
+      cuenta: config.demo
+        ? 'Correos de ejemplo'
+        : config.proveedorCorreo === 'imap'
+        ? config.imap.user
+        : connectedAccount()?.email || '',
+    },
     claudeConfigurado: config.anthropic.hasKey,
     vozNube: vozDisponible() && Boolean(vozActual()),
     vozConfigurable: vozDisponible(),
@@ -228,10 +238,11 @@ app.post('/api/hilo/:id/borrador', async (req, reply) => {
   try {
     const { texto, replyToMessageId } = await draftReply(req.params.id, instruccion);
     let outlook = null;
-    if (guardarEnOutlook && !config.demo) {
+    // Guardar como borrador sólo existe por Graph; por IMAP se copia y listo.
+    if (guardarEnOutlook && !config.demo && config.proveedorCorreo === 'graph') {
       outlook = await createReplyDraft(replyToMessageId, texto);
     }
-    return { texto, outlook, demo: config.demo };
+    return { texto, outlook, demo: config.demo, soloTexto: config.proveedorCorreo !== 'graph' };
   } catch (err) {
     return reply.code(500).send({ error: err.message });
   }
@@ -347,7 +358,11 @@ const start = async () => {
   console.log(`\n  Asistente Clau escuchando en http://localhost:${config.port}`);
   if (config.demo) console.log('  MODO DEMO: correos de mentira, no toca Outlook.');
   if (!config.anthropic.hasKey) console.log('  ⚠ Falta ANTHROPIC_API_KEY: no va a poder analizar ni hablar.');
-  if (!config.demo && !config.ms.configured) console.log('  ⚠ Falta configurar Microsoft: mirá el README.');
+  if (!config.demo) {
+    if (config.proveedorCorreo === 'imap') console.log(`  ✓ Correo por IMAP: ${config.imap.user} (${config.imap.host})`);
+    else if (config.proveedorCorreo === 'graph') console.log('  ✓ Correo por Outlook/Microsoft.');
+    else console.log('  ⚠ Falta configurar el correo: poné IMAP_USER / IMAP_PASSWORD en el .env (o conectá Outlook).');
+  }
   console.log('');
 
   startSyncLoop();

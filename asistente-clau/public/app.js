@@ -337,18 +337,18 @@ function vistaHoy() {
 
   // Sin correo conectado no hay nada que resumir: mostramos una bienvenida
   // en vez de dejar el resumen girando para siempre.
-  const correoConectado = d.demo || Boolean(d.outlook?.email);
+  const correoConectado = d.correo?.conectado ?? (d.demo || Boolean(d.outlook?.email));
   if (!correoConectado) {
     const nombre = d.ella?.nombre?.split(' ')[0] || '';
     return `
       <div class="bienvenida">
         <div class="globo">📬</div>
         <h3>${nombre ? `Hola ${esc(nombre)}, ` : ''}conectá tu correo para empezar</h3>
-        <p>Apenas conectes tu Outlook, voy a leer tus mensajes y armarte el resumen del día. Toma un minuto.</p>
+        <p>Apenas conectes tu correo, voy a leer tus mensajes y armarte el resumen del día.</p>
         ${
           d.outlookConfigurado
             ? `<a class="cta" href="/auth/login">Conectar mi Outlook</a>`
-            : `<p style="color:var(--gris-suave)">Falta un último paso de configuración en el servidor. Avisale a quien te armó esto.</p>`
+            : `<p style="color:var(--gris-suave)">Falta cargar el correo en el servidor: poné IMAP_USER y IMAP_PASSWORD en el archivo <code>.env</code> y reiniciá.</p>`
         }
       </div>`;
   }
@@ -418,11 +418,12 @@ function vistaEsperando() {
 
 function vistaAjustes() {
   const d = estado.datos;
-  const cuenta = d.outlook?.demo
-    ? 'Modo demo: correos de mentira'
-    : d.outlook?.email
-    ? `Conectada como ${d.outlook.email}`
-    : 'Outlook sin conectar';
+  const prov = { imap: 'IMAP', graph: 'Outlook', demo: 'demo' }[d.correo?.proveedor] || '';
+  const cuenta = d.correo?.conectado
+    ? d.correo.proveedor === 'demo'
+      ? 'Modo demo: correos de ejemplo'
+      : `Conectada como ${d.correo.cuenta}${prov ? ` (${prov})` : ''}`
+    : 'Sin correo conectado';
 
   const tema = temaGuardado();
   return `
@@ -502,8 +503,9 @@ function avisosSetup(d) {
     faltas.push('Modo demo con análisis precargado. Poné ANTHROPIC_API_KEY para que Claude lea de verdad.');
   else if (!d.claudeConfigurado)
     faltas.push('Falta la clave de Claude (ANTHROPIC_API_KEY): sin eso no puede leer ni hablar.');
-  if (!d.demo && !d.outlookConfigurado) faltas.push('Falta configurar Microsoft para conectar Outlook.');
-  if (!d.demo && d.outlookConfigurado && !d.outlook?.email)
+  if (!d.demo && !d.correo?.conectado && !d.outlookConfigurado)
+    faltas.push('Falta cargar el correo: poné IMAP_USER y IMAP_PASSWORD en el .env, o conectá Outlook.');
+  if (!d.demo && !d.correo?.conectado && d.outlookConfigurado && !d.outlook?.email)
     faltas.push('Outlook todavía no está conectado. Andá a Ajustes → Conectar Outlook.');
   if (!faltas.length) return '';
   return `<div class="setup">${faltas.map((f) => `<div>⚠ ${esc(f)}</div>`).join('')}</div>`;

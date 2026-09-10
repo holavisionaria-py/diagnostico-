@@ -37,6 +37,45 @@ export const config = {
     },
   },
 
+  // IMAP: forma universal de leer el correo sin registrar nada en Azure.
+  // Con sólo el usuario y una "clave de aplicación" alcanza. Preajustes por
+  // proveedor para no tener que saber host ni puerto.
+  imap: (() => {
+    const user = process.env.IMAP_USER || '';
+    const pass = process.env.IMAP_PASSWORD || '';
+    const dominio = user.split('@')[1]?.toLowerCase() || '';
+    // proveedor: explícito, o adivinado por el dominio del correo
+    const proveedor =
+      (process.env.IMAP_PROVIDER || '').toLowerCase() ||
+      (/(gmail|googlemail)\.com$/.test(dominio)
+        ? 'gmail'
+        : /(outlook|hotmail|live|msn)\./.test(dominio)
+        ? 'outlook'
+        : /(yahoo)\./.test(dominio)
+        ? 'yahoo'
+        : '');
+
+    const presets = {
+      gmail: { host: 'imap.gmail.com', port: 993, sent: '[Gmail]/Sent Mail' },
+      outlook: { host: 'outlook.office365.com', port: 993, sent: 'Sent' },
+      yahoo: { host: 'imap.mail.yahoo.com', port: 993, sent: 'Sent' },
+    };
+    const preset = presets[proveedor] || {};
+
+    return {
+      user,
+      pass,
+      proveedor,
+      host: process.env.IMAP_HOST || preset.host || '',
+      port: int(process.env.IMAP_PORT, preset.port || 993),
+      // La carpeta de enviados varía por proveedor e idioma; se puede forzar.
+      carpetaEnviados: process.env.IMAP_SENT_FOLDER || preset.sent || 'Sent',
+      get configured() {
+        return Boolean(this.user && this.pass && this.host);
+      },
+    };
+  })(),
+
   her: {
     name: process.env.HER_NAME || '',
     email: (process.env.HER_EMAIL || '').toLowerCase(),
@@ -52,4 +91,12 @@ export const config = {
   syncIntervalMs: int(process.env.SYNC_INTERVAL_MIN, 10) * 60_000,
 
   dbPath: process.env.DB_PATH || new URL('../data/clau.db', import.meta.url).pathname,
+
+  // Qué fuente de correo está activa: IMAP si tiene credenciales, si no
+  // Microsoft si está registrado, si no ninguna.
+  get proveedorCorreo() {
+    if (this.imap.configured) return 'imap';
+    if (this.ms.configured) return 'graph';
+    return null;
+  },
 };

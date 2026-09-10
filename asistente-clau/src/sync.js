@@ -10,6 +10,7 @@ import {
   db,
 } from './db.js';
 import { deltaSync } from './graph/mail.js';
+import { imapSync } from './imap/mail.js';
 import { analyzeThread } from './ai/triage.js';
 import { demoMessages, demoAnalysisFor } from './demo-data.js';
 
@@ -36,8 +37,7 @@ async function pullMail() {
     return touched;
   }
 
-  for (const folder of ['inbox', 'sent']) {
-    const { changed, removed } = await deltaSync(folder);
+  const aplicar = ({ changed, removed }) => {
     for (const m of changed) {
       upsertMessage(m);
       touched.add(m.conversationId);
@@ -47,6 +47,16 @@ async function pullMail() {
       if (row) touched.add(row.conversation_id);
       deleteMessage(id);
     }
+  };
+
+  if (config.proveedorCorreo === 'imap') {
+    aplicar(await imapSync({ days: 30 }));
+  } else if (config.proveedorCorreo === 'graph') {
+    for (const folder of ['inbox', 'sent']) {
+      aplicar(await deltaSync(folder));
+    }
+  } else {
+    throw new Error('No hay correo configurado. Poné IMAP_USER / IMAP_PASSWORD en el .env, o conectá Outlook.');
   }
 
   return touched;
