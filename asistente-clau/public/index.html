@@ -35,20 +35,22 @@
 <div class="app oculto" id="app">
   <header>
     <div class="fila">
-      <div>
+      <div class="izq">
         <div class="saludo" id="saludo">Hola</div>
         <div class="fecha" id="fecha"></div>
       </div>
-      <button id="btnSync" style="color:var(--gris);font-size:1.2rem" title="Actualizar">⟳</button>
-    </div>
-    <div class="relojes">
-      <div class="reloj" id="relojHer">
-        <div class="lugar">Vos · Indonesia</div>
-        <div class="hora">--:--</div>
-      </div>
-      <div class="reloj" id="relojHq">
-        <div class="lugar">Sede · Paraguay</div>
-        <div class="hora">--:--</div>
+      <div class="der">
+        <div class="relojes">
+          <div class="reloj" id="relojHer">
+            <span class="lugar">Indonesia</span>
+            <span class="hora">--:--</span>
+          </div>
+          <div class="reloj" id="relojHq">
+            <span class="lugar">Paraguay</span>
+            <span class="hora">--:--</span>
+          </div>
+        </div>
+        <button id="btnSync" title="Actualizar">⟳</button>
       </div>
     </div>
     <div class="ventana" id="ventana"></div>
