@@ -58,7 +58,7 @@ input,textarea{font-family:inherit}
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-thumb{background:var(--gris-suave);border-radius:3px}
 
-.app{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:0 16px calc(96px + var(--safe-b))}
+.app{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 16px calc(96px + var(--safe-b))}
 .oculto{display:none !important}
 
 /* ─── Login ─────────────────────────────────────────────────────────── */
@@ -219,7 +219,7 @@ h2.seccion.urgente{color:var(--rojo)}
 
 /* Grilla de recuadros: varios correos por fila, se adapta al ancho */
 .mosaico{
-  display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
   margin-bottom:6px;
 }
 /* Recuadro compacto dentro de la grilla */
@@ -267,7 +267,7 @@ nav{
   padding:8px 12px calc(8px + var(--safe-b));
   background:rgba(11,11,12,.92);backdrop-filter:blur(16px);border-top:1px solid var(--borde);
 }
-nav .barra{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:4px}
+nav .barra{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:4px}
 nav button.tab{
   flex:1;padding:8px 4px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:3px;
   color:var(--gris-suave);font-size:.66rem;position:relative;
