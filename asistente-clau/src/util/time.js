@@ -1,10 +1,34 @@
 import { config } from '../config.js';
 
-const fmt = (tz, opts) => new Intl.DateTimeFormat('es-AR', { timeZone: tz, ...opts });
+// Una zona horaria mal escrita en el .env (por ej. "Asia/luwuk" en vez de
+// "Asia/Makassar") no debe tumbar toda la app: la validamos una vez y, si es
+// inválida, caemos a una por defecto y lo dejamos anotado en el log.
+const TZ_POR_DEFECTO = 'UTC';
+const tzAvisadas = new Set();
+const tzValida = new Map();
+
+function zonaSegura(tz) {
+  if (!tz) return TZ_POR_DEFECTO;
+  if (tzValida.has(tz)) return tzValida.get(tz);
+  try {
+    new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(new Date());
+    tzValida.set(tz, tz);
+    return tz;
+  } catch {
+    if (!tzAvisadas.has(tz)) {
+      tzAvisadas.add(tz);
+      console.warn(`[time] zona horaria inválida "${tz}"; uso "${TZ_POR_DEFECTO}". Corregí el .env (nombre IANA, ej. Asia/Makassar).`);
+    }
+    tzValida.set(tz, TZ_POR_DEFECTO);
+    return TZ_POR_DEFECTO;
+  }
+}
+
+const fmt = (tz, opts) => new Intl.DateTimeFormat('es-AR', { timeZone: zonaSegura(tz), ...opts });
 
 export function dayKey(date = new Date(), tz = config.tz.her) {
   // en-CA da YYYY-MM-DD, que es lo que queremos como clave
-  return new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(date);
+  return new Intl.DateTimeFormat('en-CA', { timeZone: zonaSegura(tz) }).format(date);
 }
 
 export function hourIn(tz, date = new Date()) {
