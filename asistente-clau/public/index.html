@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<title>Asistente Clau</title>
+<meta name="theme-color" content="#0B0B0C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Clau">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon.png">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<!-- Pantalla de clave -->
+<div id="login">
+  <div class="caja">
+    <div class="marca"><span>Clau</span></div>
+    <p>Tu correo, ordenado y hablado.</p>
+    <form id="formLogin">
+      <input id="clave" type="password" inputmode="text" autocomplete="current-password" placeholder="• • • • • •" autofocus>
+      <button type="submit">Entrar</button>
+    </form>
+    <div class="error" id="errorLogin"></div>
+  </div>
+</div>
+
+<!-- App -->
+<div class="app oculto" id="app">
+  <header>
+    <div class="fila">
+      <div class="izq">
+        <div class="saludo" id="saludo">Hola</div>
+        <div class="fecha" id="fecha"></div>
+      </div>
+      <div class="der">
+        <div class="relojes">
+          <div class="reloj" id="relojHer">
+            <span class="lugar">Indonesia</span>
+            <span class="hora">--:--</span>
+          </div>
+          <div class="reloj" id="relojHq">
+            <span class="lugar">Paraguay</span>
+            <span class="hora">--:--</span>
+          </div>
+        </div>
+        <button id="btnSync" title="Actualizar">⟳</button>
+      </div>
+    </div>
+    <div class="ventana" id="ventana"></div>
+  </header>
+
+  <main id="vista">
+    <div class="cargando"><div class="spinner"></div><span>Leyendo tu correo…</span></div>
+  </main>
+</div>
+
+<!-- Micrófono -->
+<button id="mic" class="oculto" aria-label="Hablar con Clau">
+  <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+    <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/>
+  </svg>
+</button>
+
+<!-- Barra inferior -->
+<nav class="oculto" id="nav">
+  <div class="barra">
+    <button class="tab activo" data-vista="hoy">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+      Hoy
+    </button>
+    <button class="tab" data-vista="hablaron">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-4-.9L3 21l1.9-4.9A8.4 8.4 0 0 1 4 11.5a8.5 8.5 0 0 1 17 0z"/></svg>
+      Te hablaron
+      <span class="badge oculto" id="badgeHablaron">0</span>
+    </button>
+    <button class="tab" data-vista="esperando">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      Esperás
+    </button>
+    <button class="tab" data-vista="ajustes">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1v.3a2 2 0 1 1-4 0v-.2a1.6 1.6 0 0 0-2.8-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3.5 15H3a2 2 0 1 1 0-4h.2a1.6 1.6 0 0 0 1.1-2.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 2.7-1.1V3a2 2 0 1 1 4 0v.2a1.6 1.6 0 0 0 2.8 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0 1.1 2.7h.3a2 2 0 1 1 0 4h-.2a1.6 1.6 0 0 0-1.2 1.1z"/></svg>
+      Ajustes
+    </button>
+  </div>
+</nav>
+
+<script src="/app.js" type="module"></script>
+</body>
+</html>
