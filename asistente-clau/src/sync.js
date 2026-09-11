@@ -11,6 +11,7 @@ import {
 } from './db.js';
 import { deltaSync } from './graph/mail.js';
 import { imapSync } from './imap/mail.js';
+import { proveedorActivo } from './correo/cuenta.js';
 import { analyzeThread } from './ai/triage.js';
 import { demoMessages, demoAnalysisFor } from './demo-data.js';
 
@@ -49,9 +50,9 @@ async function pullMail() {
     }
   };
 
-  if (config.proveedorCorreo === 'imap') {
+  if (proveedorActivo() === 'imap') {
     aplicar(await imapSync({ days: 30 }));
-  } else if (config.proveedorCorreo === 'graph') {
+  } else if (proveedorActivo() === 'graph') {
     for (const folder of ['inbox', 'sent']) {
       aplicar(await deltaSync(folder));
     }

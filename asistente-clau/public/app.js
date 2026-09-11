@@ -333,6 +333,34 @@ function tarjeta(t, { compacta = false } = {}) {
 
 const vacio = (emo, txt) => `<div class="vacio"><span class="emo">${emo}</span>${esc(txt)}</div>`;
 
+// Formulario para que la propia usuaria conecte su casilla. La clave viaja
+// una sola vez al servidor, se prueba y se guarda cifrada; nunca vuelve.
+function formularioCorreo() {
+  return `
+    <form class="conectar" onsubmit="return false">
+      <label>Tipo de correo
+        <select id="correoTipo">
+          <option value="">Detectar solo</option>
+          <option value="gmail">Gmail</option>
+          <option value="outlook">Outlook / Microsoft 365 (trabajo)</option>
+          <option value="yahoo">Yahoo</option>
+        </select>
+      </label>
+      <label>Tu correo
+        <input id="correoEmail" type="email" inputmode="email" autocomplete="username" placeholder="nombre@empresa.com">
+      </label>
+      <label>Clave de aplicación
+        <input id="correoClave" type="password" autocomplete="current-password" placeholder="clave de aplicación">
+      </label>
+      <button id="btnConectarCorreo" class="cta">Conectar mi correo</button>
+      <p class="ayuda-correo">
+        Usá una <b>clave de aplicación</b>, no tu clave normal. En Gmail se crea en
+        <span class="mono">myaccount.google.com/apppasswords</span>. En el correo del trabajo, si no te deja,
+        avisá a quien lo administra.
+      </p>
+    </form>`;
+}
+
 // "Actualizado recién / hace 3 min" a partir de la última sincronización.
 function textoActualizado(iso) {
   if (!iso) return 'Actualizando…';
@@ -357,12 +385,8 @@ function vistaHoy() {
       <div class="bienvenida">
         <div class="globo">📬</div>
         <h3>${nombre ? `Hola ${esc(nombre)}, ` : ''}conectá tu correo para empezar</h3>
-        <p>Apenas conectes tu correo, voy a leer tus mensajes y armarte el resumen del día.</p>
-        ${
-          d.outlookConfigurado
-            ? `<a class="cta" href="/auth/login">Conectar mi Outlook</a>`
-            : `<p style="color:var(--gris-suave)">Falta cargar el correo en el servidor: poné IMAP_USER y IMAP_PASSWORD en el archivo <code>.env</code> y reiniciá.</p>`
-        }
+        <p>Escribí tu correo y tu clave. Se guardan cifradas en tu servidor y nadie más las ve. Empiezo a leer apenas conectás.</p>
+        ${formularioCorreo(d)}
       </div>`;
   }
 
@@ -458,13 +482,15 @@ function vistaAjustes() {
       <h3>Correo</h3>
       <p>${esc(cuenta)}</p>
       ${
-        !d.outlook?.demo && !d.outlook?.email && d.outlookConfigurado
-          ? `<div class="acciones"><a class="pri" href="/auth/login" style="font-size:.8rem;padding:9px 14px;border-radius:9px;background:linear-gradient(90deg,var(--dorado),var(--verde));color:#0B0B0C;font-weight:600;text-decoration:none;display:inline-block;margin-top:12px">Conectar Outlook</a></div>`
+        d.correo?.conectado && d.correo?.proveedor === 'imap'
+          ? `<div class="acciones"><button id="btnDesconectarCorreo">Desconectar mi correo</button></div>`
+          : d.correo?.puedeConectar
+          ? formularioCorreo()
           : ''
       }
       ${
         d.outlook?.email
-          ? `<div class="acciones"><button id="btnDesconectar">Desconectar</button></div>`
+          ? `<div class="acciones"><button id="btnDesconectar">Desconectar Outlook</button></div>`
           : ''
       }
     </div>
@@ -975,6 +1001,41 @@ document.addEventListener('click', async (e) => {
   const guion = e.target.closest('#guionTexto');
   if (guion) {
     guion.classList.toggle('abierto');
+    return;
+  }
+
+  if (e.target.closest('#btnConectarCorreo')) {
+    const btn = e.target.closest('#btnConectarCorreo');
+    const email = $('#correoEmail')?.value?.trim();
+    const clave = $('#correoClave')?.value;
+    const proveedor = $('#correoTipo')?.value || '';
+    if (!email || !clave) return aviso('Poné tu correo y tu clave.', 'mal');
+    btn.disabled = true;
+    const txtOrig = btn.textContent;
+    btn.textContent = 'Conectando…';
+    try {
+      await api('/correo/conectar', { method: 'POST', body: { email, clave, proveedor } });
+      aviso('¡Correo conectado! Leyendo tus mensajes…', 'bien');
+      estado.brief = null;
+      await cargar();
+    } catch (err) {
+      aviso(err.message, 'mal');
+      btn.disabled = false;
+      btn.textContent = txtOrig;
+    }
+    return;
+  }
+
+  if (e.target.closest('#btnDesconectarCorreo')) {
+    if (!confirm('¿Desconectar este correo? Se borran los mensajes leídos de este dispositivo.')) return;
+    try {
+      await api('/correo/desconectar', { method: 'POST' });
+      estado.brief = null;
+      aviso('Correo desconectado.', 'bien');
+      await cargar();
+    } catch (err) {
+      aviso(err.message, 'mal');
+    }
     return;
   }
 

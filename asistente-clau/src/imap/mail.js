@@ -9,18 +9,19 @@
  */
 import { ImapFlow } from 'imapflow';
 import { simpleParser } from 'mailparser';
-import { config } from '../config.js';
 import { kv } from '../db.js';
 import { htmlToText } from '../graph/mail.js';
+import { cuentaActiva } from '../correo/cuenta.js';
 
-function cliente() {
-  const { imap } = config;
-  if (!imap.configured) throw new Error('IMAP no está configurado (faltan IMAP_USER / IMAP_PASSWORD).');
+/** Crea el cliente IMAP para unas creds dadas, o para la cuenta activa. */
+function cliente(creds) {
+  const c = creds || cuentaActiva();
+  if (!c.configured) throw new Error('No hay una casilla de correo conectada.');
   return new ImapFlow({
-    host: imap.host,
-    port: imap.port,
-    secure: imap.port === 993,
-    auth: { user: imap.user, pass: imap.pass },
+    host: c.host,
+    port: c.port,
+    secure: c.port === 993,
+    auth: { user: c.user, pass: c.pass },
     logger: false,
     // Gmail y varios servidores cierran conexiones ociosas; toleramos eso.
     socketTimeout: 60_000,
@@ -119,7 +120,7 @@ async function traerCarpeta(client, ruta, folder, { days, maxMensajes = 200 }) {
 
 /** Nombre real de la carpeta de enviados (varía por proveedor e idioma). */
 async function rutaEnviados(client) {
-  const preferida = config.imap.carpetaEnviados;
+  const preferida = cuentaActiva().carpetaEnviados || 'Sent';
   try {
     const lista = await client.list();
     // 1) la que configuramos, 2) la marcada \Sent por el servidor, 3) por nombre
@@ -149,17 +150,21 @@ export async function imapSync({ days = 30 } = {}) {
   }
 }
 
-/** Prueba la conexión y devuelve el correo conectado, o lanza un error claro. */
-export async function probarImap() {
-  const client = cliente();
+/**
+ * Prueba una conexión IMAP. Si le pasás unas creds, prueba ésas (para validar
+ * antes de guardar); si no, prueba la cuenta activa. Lanza un error claro.
+ */
+export async function probarImap(creds) {
+  const client = cliente(creds);
   try {
     await client.connect();
     await client.logout().catch(() => {});
-    return { ok: true, email: config.imap.user };
+    return { ok: true, email: (creds || cuentaActiva()).user };
   } catch (err) {
     let msg = err.message || 'no se pudo conectar';
-    if (/auth|login|credentials|invalid/i.test(msg)) {
-      msg = 'Usuario o clave incorrectos. En Gmail tenés que usar una "clave de aplicación", no tu clave normal.';
+    if (/auth|login|credentials|invalid|AUTHENTICATIONFAILED/i.test(msg)) {
+      msg =
+        'Usuario o clave incorrectos. En Gmail o en el correo del trabajo suele hacer falta una "clave de aplicación", no la clave normal.';
     }
     throw new Error(msg);
   }

@@ -290,3 +290,17 @@ export function recentChat(limit = 12) {
 export function clearChat() {
   db.exec('DELETE FROM chat');
 }
+
+/**
+ * Borra todo el correo y el análisis, y resetea los marcadores de sync, para
+ * cuando se cambia de casilla (los correos de la anterior no deben quedar).
+ * No toca la cuenta guardada ni la configuración.
+ */
+export function resetMailbox() {
+  db.exec('DELETE FROM messages');
+  db.exec('DELETE FROM threads');
+  db.exec('DELETE FROM briefs');
+  db.exec('DELETE FROM chat');
+  // Marcadores de sincronización (últimos UID de IMAP, deltas de Graph, etc.)
+  db.exec("DELETE FROM kv WHERE k LIKE 'imap_lastuid_%' OR k LIKE 'delta_%' OR k IN ('last_sync','last_sync_error')");
+}

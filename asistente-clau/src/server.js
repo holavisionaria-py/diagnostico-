@@ -14,8 +14,18 @@ import {
   setThreadPinned,
   recentChat,
   clearChat,
+  resetMailbox,
   kv,
 } from './db.js';
+import {
+  proveedorActivo,
+  cuentaActiva,
+  cuentaPublica,
+  armarCreds,
+  guardarCuenta,
+  borrarCuenta,
+} from './correo/cuenta.js';
+import { probarImap } from './imap/mail.js';
 import { runSync, startSyncLoop, syncState } from './sync.js';
 import { generateBrief } from './ai/brief.js';
 import { ask } from './ai/ask.js';
@@ -161,15 +171,18 @@ app.get('/api/estado', async () => {
     ella: { nombre: config.her.name, email: config.her.email },
     outlook: config.demo ? { demo: true } : connectedAccount(),
     outlookConfigurado: config.ms.configured,
-    // Correo genérico: puede venir por IMAP o por Outlook.
+    // Correo genérico: puede venir por IMAP (conectado por la app o el .env)
+    // o por Outlook. La usuaria lo conecta desde la app; el .env es respaldo.
     correo: {
-      proveedor: config.demo ? 'demo' : config.proveedorCorreo,
-      conectado: config.demo || config.proveedorCorreo === 'imap' || Boolean(connectedAccount()?.email),
+      proveedor: config.demo ? 'demo' : proveedorActivo(),
+      conectado: config.demo || proveedorActivo() === 'imap' || Boolean(connectedAccount()?.email),
       cuenta: config.demo
         ? 'Correos de ejemplo'
-        : config.proveedorCorreo === 'imap'
-        ? config.imap.user
+        : proveedorActivo() === 'imap'
+        ? cuentaActiva().user
         : connectedAccount()?.email || '',
+      // Si NO está conectado, la app muestra el formulario de conexión.
+      puedeConectar: !config.demo,
     },
     claudeConfigurado: config.anthropic.hasKey,
     vozNube: vozDisponible() && Boolean(vozActual()),
@@ -239,10 +252,10 @@ app.post('/api/hilo/:id/borrador', async (req, reply) => {
     const { texto, replyToMessageId } = await draftReply(req.params.id, instruccion);
     let outlook = null;
     // Guardar como borrador sólo existe por Graph; por IMAP se copia y listo.
-    if (guardarEnOutlook && !config.demo && config.proveedorCorreo === 'graph') {
+    if (guardarEnOutlook && !config.demo && proveedorActivo() === 'graph') {
       outlook = await createReplyDraft(replyToMessageId, texto);
     }
-    return { texto, outlook, demo: config.demo, soloTexto: config.proveedorCorreo !== 'graph' };
+    return { texto, outlook, demo: config.demo, soloTexto: proveedorActivo() !== 'graph' };
   } catch (err) {
     return reply.code(500).send({ error: err.message });
   }
@@ -282,6 +295,38 @@ app.post('/api/sync', async (req, reply) => {
 
 app.post('/api/desconectar', async () => {
   disconnect();
+  return { ok: true };
+});
+
+// ── conectar la casilla desde la app (la clave se guarda cifrada) ───────────
+app.post('/api/correo/conectar', async (req, reply) => {
+  if (config.demo) return reply.code(400).send({ error: 'En modo demo no se conecta correo real.' });
+  const { email = '', clave = '', proveedor = '', host = '' } = req.body ?? {};
+  if (!email.trim() || !clave.trim()) {
+    return reply.code(400).send({ error: 'Poné tu correo y tu clave.' });
+  }
+  const creds = armarCreds({ email: email.trim(), pass: clave, proveedor, host });
+  if (!creds) {
+    return reply.code(400).send({
+      error: 'No pude deducir el servidor de tu correo. Elegí el tipo (Gmail, Outlook/Microsoft o Yahoo).',
+    });
+  }
+  // Probamos ANTES de guardar: si la clave está mal, no guardamos nada.
+  try {
+    await probarImap(creds);
+  } catch (err) {
+    return reply.code(400).send({ error: err.message });
+  }
+  // Si cambia la casilla, limpiamos lo de la anterior y arrancamos de cero.
+  resetMailbox();
+  guardarCuenta(creds);
+  runSync().catch(() => {});
+  return { ok: true, email: creds.user };
+});
+
+app.post('/api/correo/desconectar', async () => {
+  borrarCuenta();
+  resetMailbox();
   return { ok: true };
 });
 
@@ -359,9 +404,11 @@ const start = async () => {
   if (config.demo) console.log('  MODO DEMO: correos de mentira, no toca Outlook.');
   if (!config.anthropic.hasKey) console.log('  ⚠ Falta ANTHROPIC_API_KEY: no va a poder analizar ni hablar.');
   if (!config.demo) {
-    if (config.proveedorCorreo === 'imap') console.log(`  ✓ Correo por IMAP: ${config.imap.user} (${config.imap.host})`);
-    else if (config.proveedorCorreo === 'graph') console.log('  ✓ Correo por Outlook/Microsoft.');
-    else console.log('  ⚠ Falta configurar el correo: poné IMAP_USER / IMAP_PASSWORD en el .env (o conectá Outlook).');
+    if (proveedorActivo() === 'imap') {
+      const c = cuentaActiva();
+      console.log(`  ✓ Correo por IMAP: ${c.user} (${c.host}) [${c.origen === 'app' ? 'conectado desde la app' : '.env'}]`);
+    } else if (proveedorActivo() === 'graph') console.log('  ✓ Correo por Outlook/Microsoft.');
+    else console.log('  ⚠ Sin casilla conectada: se conecta desde la app (o poné IMAP_USER / IMAP_PASSWORD en el .env).');
   }
   console.log('');
 

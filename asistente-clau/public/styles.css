@@ -482,3 +482,28 @@ textarea.borrador:focus{outline:none;border-color:var(--verde)}
   background:linear-gradient(90deg,var(--dorado),var(--verde));text-decoration:none;
   display:inline-block;
 }
+
+/* Formulario para conectar la casilla */
+.conectar{
+  width:100%;max-width:380px;margin:6px auto 0;text-align:left;
+  display:flex;flex-direction:column;gap:12px;
+}
+.conectar label{
+  display:flex;flex-direction:column;gap:5px;font-size:.75rem;color:var(--gris);
+}
+.conectar input,.conectar select{
+  width:100%;background:var(--panel);border:1px solid var(--borde);border-radius:10px;
+  padding:12px;color:var(--texto);font-size:.95rem;
+}
+.conectar input:focus,.conectar select:focus{
+  outline:none;border-color:var(--verde);box-shadow:0 0 0 3px rgba(164,224,0,.12);
+}
+.conectar .cta{
+  border:none;cursor:pointer;margin-top:4px;padding:13px;border-radius:11px;font-weight:700;
+  color:#0B0B0C;background:linear-gradient(90deg,var(--dorado),var(--verde));font-size:.95rem;
+}
+.conectar .cta:disabled{opacity:.6}
+.ayuda-correo{font-size:.74rem !important;color:var(--gris-suave) !important;line-height:1.55 !important}
+.ayuda-correo .mono{font-family:ui-monospace,monospace;color:var(--gris)}
+/* En Ajustes el formulario va alineado a la izquierda, sin centrar */
+.bloque .conectar{margin-left:0;max-width:420px}
