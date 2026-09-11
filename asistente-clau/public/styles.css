@@ -216,22 +216,23 @@ h2.seccion.urgente{color:var(--rojo)}
 .acciones button.pri{background:linear-gradient(90deg,var(--dorado),var(--verde));color:#0B0B0C;border-color:transparent;font-weight:600}
 .acciones button.on{color:var(--verde);border-color:rgba(164,224,0,.4)}
 
-/* Tarjeta compacta: fila fina para ver muchas de un vistazo */
-.tarjeta.slim{
-  display:flex;align-items:center;gap:11px;padding:11px 14px;margin-bottom:7px;cursor:pointer;
+/* Grilla de recuadros: varios correos por fila, se adapta al ancho */
+.mosaico{
+  display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  margin-bottom:6px;
 }
-.tarjeta.slim .avatar{width:32px;height:32px;flex:0 0 32px;font-size:.72rem}
-.tarjeta.slim .slim-cuerpo{flex:1;min-width:0}
-.tarjeta.slim .slim-top{display:flex;align-items:baseline;gap:8px}
-.tarjeta.slim .slim-top b{
-  flex:1;min-width:0;font-size:.9rem;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+/* Recuadro compacto dentro de la grilla */
+.tarjeta.box{margin-bottom:0;padding:14px;display:flex;flex-direction:column}
+.tarjeta.box .cab{cursor:pointer}
+.tarjeta.box .avatar{width:32px;height:32px;flex:0 0 32px;font-size:.72rem}
+.tarjeta.box .quien b{font-size:.9rem}
+.tarjeta.box .chips{margin-top:10px}
+.tarjeta.box .resumen{
+  margin-top:10px;font-size:.82rem;line-height:1.5;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
 }
-.tarjeta.slim .slim-top .hace{color:var(--gris-suave);font-size:.68rem;white-space:nowrap;flex:0 0 auto}
-.tarjeta.slim .slim-linea{
-  margin-top:2px;font-size:.8rem;line-height:1.4;color:var(--gris);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.tarjeta.slim .slim-fijado{color:var(--dorado);font-size:.85rem;flex:0 0 auto}
+.tarjeta.box .acciones{margin-top:auto;padding-top:12px}
+.tarjeta.box .acciones button{font-size:.74rem;padding:7px 11px}
 
 /* Encabezado del reporte del día */
 .reporte-cab{
@@ -240,7 +241,18 @@ h2.seccion.urgente{color:var(--rojo)}
 }
 .reporte-titulo{font-size:1.05rem;font-weight:700;margin:0}
 .reporte-sync{color:var(--gris-suave);font-size:.72rem}
-.brief{margin-top:10px !important}
+
+/* Reporte del día en versión chica */
+.brief.mini{margin-top:10px;padding:12px}
+.brief.mini .escuchar{margin-top:0}
+.brief.mini .txt .linea1{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.brief.mini .txt .linea1 small{color:var(--gris-suave);font-size:.68rem}
+.brief.mini .txt b{font-size:.92rem;line-height:1.3;display:block}
+.brief.mini .guion{
+  margin-top:10px;font-size:.8rem;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.brief.mini .guion.abierto{-webkit-line-clamp:unset;display:block}
 
 .vacio{
   text-align:center;padding:34px 20px;color:var(--gris-suave);font-size:.88rem;

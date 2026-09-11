@@ -293,28 +293,14 @@ const claseAvatar = (t) =>
   t.categoria === 'interno' ? 'interno' : ['calidad', 'proveedor', 'muestra'].includes(t.categoria) ? 'fabrica' : '';
 
 function tarjeta(t, { compacta = false } = {}) {
-  // Fila fina: entran varias por pantalla. Todo el bloque abre el detalle;
-  // el resumen y las acciones completas viven adentro, al abrir.
-  if (compacta) {
-    return `
-  <article class="tarjeta slim ${t.urgencia || 'baja'} ${t.fijado ? 'fijado' : ''}" data-id="${esc(t.id)}" data-abrir="${esc(t.id)}">
-    <div class="avatar ${claseAvatar(t)}">${esc(iniciales(t.de?.nombre || t.quien))}</div>
-    <div class="slim-cuerpo">
-      <div class="slim-top">
-        <b>${esc(t.titulo || t.asunto)}</b>
-        <span class="hace">${esc(t.hace)}</span>
-      </div>
-      <p class="slim-linea">${esc(t.resumen || t.una_linea_para_voz || '')}</p>
-    </div>
-    ${t.fijado ? '<span class="slim-fijado">★</span>' : ''}
-  </article>`;
-  }
-
-  const datos = (t.datos_clave ?? []).slice(0, 3);
-  const piden = (t.te_piden ?? []).slice(0, 3);
+  // Recuadro tipo panel: título, etiquetas, una línea de resumen y acciones.
+  // Se acomodan en grilla (varios por fila) — ver .mosaico en el CSS.
+  const datos = (t.datos_clave ?? []).slice(0, compacta ? 1 : 3);
+  const piden = (t.te_piden ?? []).slice(0, compacta ? 0 : 3);
+  const linea = t.resumen || t.una_linea_para_voz || '';
 
   return `
-  <article class="tarjeta ${t.urgencia || 'baja'} ${t.fijado ? 'fijado' : ''}" data-id="${esc(t.id)}">
+  <article class="tarjeta ${compacta ? 'box' : ''} ${t.urgencia || 'baja'} ${t.fijado ? 'fijado' : ''}" data-id="${esc(t.id)}">
     <div class="cab" data-abrir="${esc(t.id)}">
       <div class="avatar ${claseAvatar(t)}">${esc(iniciales(t.de?.nombre || t.quien))}</div>
       <div class="quien">
@@ -324,18 +310,18 @@ function tarjeta(t, { compacta = false } = {}) {
       <div class="meta"><div class="hace">${esc(t.hace)}</div></div>
     </div>
 
-    ${t.resumen ? `<p class="resumen">${esc(t.resumen)}</p>` : ''}
-
-    ${piden.length ? `<ul class="piden">${piden.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}
-
-    ${t.consejo ? `<div class="consejo"><span class="lampara">💡</span><span>${esc(t.consejo)}</span></div>` : ''}
-
     <div class="chips">
       ${t.urgencia === 'alta' ? `<span class="chip alta">urgente</span>` : ''}
       ${t.fecha_limite ? `<span class="chip fecha">vence ${esc(t.fecha_limite)}</span>` : ''}
       ${t.categoria ? `<span class="chip">${esc(t.categoria)}</span>` : ''}
       ${datos.map((d) => `<span class="chip dato">${esc(d.etiqueta)}: ${esc(d.valor)}</span>`).join('')}
     </div>
+
+    ${linea ? `<p class="resumen">${esc(linea)}</p>` : ''}
+
+    ${piden.length ? `<ul class="piden">${piden.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>` : ''}
+
+    ${!compacta && t.consejo ? `<div class="consejo"><span class="lampara">💡</span><span>${esc(t.consejo)}</span></div>` : ''}
 
     <div class="acciones">
       <button class="pri" data-abrir="${esc(t.id)}">Ver y responder</button>
@@ -384,13 +370,13 @@ function vistaHoy() {
     if (!items?.length) return '';
     return `
       <h2 class="seccion ${clase}">${titulo}<span class="n">${items.length}</span></h2>
-      ${items
+      <div class="mosaico">${items
         .map((i) => {
           const t = b.porId?.[i.conversation_id];
-          if (!t) return `<div class="tarjeta baja"><p class="resumen">${esc(i.linea)}</p></div>`;
+          if (!t) return `<div class="tarjeta box baja"><p class="resumen">${esc(i.linea)}</p></div>`;
           return tarjeta({ ...t, resumen: i.linea }, { compacta: true });
         })
-        .join('')}`;
+        .join('')}</div>`;
   };
 
   if (!b) {
@@ -400,21 +386,19 @@ function vistaHoy() {
     return `${avisosSetup(d)}${cuerpo}`;
   }
 
+  const seg = Math.max(20, Math.round((b.guion_voz.split(/\s+/).length / 150) * 60));
   const briefHtml = `
     <div class="reporte-cab">
       <h2 class="reporte-titulo">Tu reporte de hoy</h2>
       <span class="reporte-sync">${esc(textoActualizado(d.sync?.lastSync))} · se revisa solo cada 10 min</span>
     </div>
-    <section class="brief">
-      <span class="animo ${esc(b.animo)}">${esc(b.animo)}</span>
-      <div class="titular">${esc(b.titular)}</div>
+    <section class="brief mini">
       <button class="escuchar" id="btnBrief">
         <span class="icono">▶</span>
-        <span class="txt"><b>Escuchá tu resumen</b><small>${b.guion_voz.split(/\s+/).length} palabras · ~${Math.max(
-        20,
-        Math.round((b.guion_voz.split(/\s+/).length / 150) * 60)
-      )} seg</small></span>
-        <span class="onda"><i></i><i></i><i></i><i></i><i></i></span>
+        <span class="txt">
+          <span class="linea1"><span class="animo ${esc(b.animo)}">${esc(b.animo)}</span><small>${seg} seg</small></span>
+          <b>${esc(b.titular)}</b>
+        </span>
       </button>
       <p class="guion" id="guionTexto" title="Tocá para ver todo">${esc(b.guion_voz)}</p>
     </section>
@@ -434,9 +418,10 @@ function vistaHablaron() {
   if (!d.teHablaron.length) return vacio('🎉', 'Nadie está esperando nada de vos. Bandeja al día.');
   const urgentes = d.teHablaron.filter((t) => t.urgencia === 'alta');
   const resto = d.teHablaron.filter((t) => t.urgencia !== 'alta');
+  const grilla = (arr) => `<div class="mosaico">${arr.map((t) => tarjeta(t, { compacta: true })).join('')}</div>`;
   return `
-    ${urgentes.length ? `<h2 class="seccion urgente">No puede esperar<span class="n">${urgentes.length}</span></h2>${urgentes.map((t) => tarjeta(t)).join('')}` : ''}
-    ${resto.length ? `<h2 class="seccion">El resto<span class="n">${resto.length}</span></h2>${resto.map((t) => tarjeta(t)).join('')}` : ''}`;
+    ${urgentes.length ? `<h2 class="seccion urgente">No puede esperar<span class="n">${urgentes.length}</span></h2>${grilla(urgentes)}` : ''}
+    ${resto.length ? `<h2 class="seccion">El resto<span class="n">${resto.length}</span></h2>${grilla(resto)}` : ''}`;
 }
 
 function vistaEsperando() {
@@ -444,7 +429,7 @@ function vistaEsperando() {
   if (!d.esperando.length) return vacio('⏳', 'No hay nadie debiéndote respuesta.');
   return `
     <h2 class="seccion">Respondiste y no te contestaron<span class="n">${d.esperando.length}</span></h2>
-    ${d.esperando.map((t) => tarjeta(t)).join('')}`;
+    <div class="mosaico">${d.esperando.map((t) => tarjeta(t, { compacta: true })).join('')}</div>`;
 }
 
 function vistaAjustes() {
