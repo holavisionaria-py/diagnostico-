@@ -293,8 +293,25 @@ const claseAvatar = (t) =>
   t.categoria === 'interno' ? 'interno' : ['calidad', 'proveedor', 'muestra'].includes(t.categoria) ? 'fabrica' : '';
 
 function tarjeta(t, { compacta = false } = {}) {
+  // Fila fina: entran varias por pantalla. Todo el bloque abre el detalle;
+  // el resumen y las acciones completas viven adentro, al abrir.
+  if (compacta) {
+    return `
+  <article class="tarjeta slim ${t.urgencia || 'baja'} ${t.fijado ? 'fijado' : ''}" data-id="${esc(t.id)}" data-abrir="${esc(t.id)}">
+    <div class="avatar ${claseAvatar(t)}">${esc(iniciales(t.de?.nombre || t.quien))}</div>
+    <div class="slim-cuerpo">
+      <div class="slim-top">
+        <b>${esc(t.titulo || t.asunto)}</b>
+        <span class="hace">${esc(t.hace)}</span>
+      </div>
+      <p class="slim-linea">${esc(t.resumen || t.una_linea_para_voz || '')}</p>
+    </div>
+    ${t.fijado ? '<span class="slim-fijado">★</span>' : ''}
+  </article>`;
+  }
+
   const datos = (t.datos_clave ?? []).slice(0, 3);
-  const piden = (t.te_piden ?? []).slice(0, compacta ? 1 : 3);
+  const piden = (t.te_piden ?? []).slice(0, 3);
 
   return `
   <article class="tarjeta ${t.urgencia || 'baja'} ${t.fijado ? 'fijado' : ''}" data-id="${esc(t.id)}">
@@ -329,6 +346,16 @@ function tarjeta(t, { compacta = false } = {}) {
 }
 
 const vacio = (emo, txt) => `<div class="vacio"><span class="emo">${emo}</span>${esc(txt)}</div>`;
+
+// "Actualizado recién / hace 3 min" a partir de la última sincronización.
+function textoActualizado(iso) {
+  if (!iso) return 'Actualizando…';
+  const min = Math.round((Date.now() - new Date(iso)) / 60000);
+  if (min < 1) return 'Actualizado recién';
+  if (min < 60) return `Actualizado hace ${min} min`;
+  const h = Math.round(min / 60);
+  return `Actualizado hace ${h} h`;
+}
 
 // ─── Vistas ─────────────────────────────────────────────────────────────
 function vistaHoy() {
@@ -374,6 +401,10 @@ function vistaHoy() {
   }
 
   const briefHtml = `
+    <div class="reporte-cab">
+      <h2 class="reporte-titulo">Tu reporte de hoy</h2>
+      <span class="reporte-sync">${esc(textoActualizado(d.sync?.lastSync))} · se revisa solo cada 10 min</span>
+    </div>
     <section class="brief">
       <span class="animo ${esc(b.animo)}">${esc(b.animo)}</span>
       <div class="titular">${esc(b.titular)}</div>

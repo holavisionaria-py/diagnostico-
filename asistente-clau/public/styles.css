@@ -216,6 +216,32 @@ h2.seccion.urgente{color:var(--rojo)}
 .acciones button.pri{background:linear-gradient(90deg,var(--dorado),var(--verde));color:#0B0B0C;border-color:transparent;font-weight:600}
 .acciones button.on{color:var(--verde);border-color:rgba(164,224,0,.4)}
 
+/* Tarjeta compacta: fila fina para ver muchas de un vistazo */
+.tarjeta.slim{
+  display:flex;align-items:center;gap:11px;padding:11px 14px;margin-bottom:7px;cursor:pointer;
+}
+.tarjeta.slim .avatar{width:32px;height:32px;flex:0 0 32px;font-size:.72rem}
+.tarjeta.slim .slim-cuerpo{flex:1;min-width:0}
+.tarjeta.slim .slim-top{display:flex;align-items:baseline;gap:8px}
+.tarjeta.slim .slim-top b{
+  flex:1;min-width:0;font-size:.9rem;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tarjeta.slim .slim-top .hace{color:var(--gris-suave);font-size:.68rem;white-space:nowrap;flex:0 0 auto}
+.tarjeta.slim .slim-linea{
+  margin-top:2px;font-size:.8rem;line-height:1.4;color:var(--gris);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tarjeta.slim .slim-fijado{color:var(--dorado);font-size:.85rem;flex:0 0 auto}
+
+/* Encabezado del reporte del día */
+.reporte-cab{
+  display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  margin-top:18px;flex-wrap:wrap;
+}
+.reporte-titulo{font-size:1.05rem;font-weight:700;margin:0}
+.reporte-sync{color:var(--gris-suave);font-size:.72rem}
+.brief{margin-top:10px !important}
+
 .vacio{
   text-align:center;padding:34px 20px;color:var(--gris-suave);font-size:.88rem;
   border:1px dashed var(--borde);border-radius:var(--radio);
