@@ -4,6 +4,11 @@
  *
  * Si además falta ANTHROPIC_API_KEY, se usa el campo `analysis` precocinado,
  * así el panel se ve completo incluso sin llamar a Claude.
+ *
+ * Ambientados en el día real de Valeria: fábrica ecococo en Indonesia
+ * (João en envíos, su jefe el Sr. Wali), sede en Paraguay, y clientes de
+ * Líbano, Brasil y Estados Unidos. Los dolores de cabeza de siempre:
+ * tablas que no cuadran, precios, gastos y plata que no llega.
  */
 import { config } from './config.js';
 
@@ -11,324 +16,337 @@ const YO = config.her.email || 'ella@empresa.com';
 const NOMBRE = config.her.name || 'Ella';
 
 const hoursAgo = (h) => new Date(Date.now() - h * 3_600_000).toISOString();
+const enDias = (d) => new Date(Date.now() + d * 86_400_000).toISOString().slice(0, 10);
 
 export const DEMO_THREADS = [
   {
-    conversationId: 'DEMO-embarque-4412',
+    conversationId: 'DEMO-pago-libano',
     messages: [
       {
-        from: { name: 'Rodrigo Benítez', email: 'rbenitez@sede.com.py' },
+        from: { name: 'Sr. Wali', email: 'wali@ecococo.co.id' },
         to: [{ name: NOMBRE, email: YO }],
-        subject: 'URGENTE - Booking contenedor MSKU7741203 se cae mañana',
-        receivedAt: hoursAgo(9),
-        body: `Hola, buenas.
+        subject: 'El pago de Beirut sigue sin entrar - freno el próximo contenedor',
+        receivedAt: hoursAgo(11),
+        body: `Valeria,
 
-La naviera nos avisó que el booking del MSKU7741203 vence mañana 18:00 hora Paraguay. Si no confirmamos hoy el packing list definitivo, perdemos el espacio y el próximo vessel sale recién en 12 días.
+La factura EC-1187 de Cedar Shisha (Beirut) por USD 38.600 venció hace 8 días y todavía no veo la plata en la cuenta. Karim me dice por WhatsApp que ya transfirió, pero no me manda el comprobante y el banco no muestra nada.
 
-Necesito de tu lado:
-1) Packing list final con el peso neto real por pallet
-2) Confirmación de que los 18 pallets de cubo 26mm están terminados
-3) El certificado de fumigación
+No puedo liberar el próximo contenedor (ya booking confirmado) mientras esta factura siga abierta. Necesito que hables vos con Karim y me consigas el comprobante de transferencia HOY, o me confirmes si de verdad pagó.
 
-El cliente de Dubai ya pagó el 30% de anticipo y está preguntando por el ETD. No podemos perder este barco.
+Si el lunes no está, cancelo el booking.
 
-Avisame apenas puedas.
-Rodrigo`,
-      },
-      {
-        from: { name: 'Rodrigo Benítez', email: 'rbenitez@sede.com.py' },
-        to: [{ name: NOMBRE, email: YO }],
-        subject: 'RE: URGENTE - Booking contenedor MSKU7741203 se cae mañana',
-        receivedAt: hoursAgo(3),
-        body: `Perdón que insista. ¿Llegaste a ver el mail? Con el packing list solo me alcanza, lo demás lo puedo empujar yo desde acá.`,
+Wali`,
       },
     ],
     analysis: {
-      titulo: 'Booking del contenedor vence mañana',
-      quien: 'Rodrigo Benítez, de la sede en Paraguay',
+      titulo: 'La plata de Beirut no entró y frenan el contenedor',
+      quien: 'Sr. Wali, jefe de la fábrica ecococo',
       resumen:
-        'La naviera da de baja el booking del MSKU7741203 mañana a las 18:00 de Paraguay si no se confirma el packing list definitivo. Rodrigo ya escribió dos veces y todavía no tuvo respuesta. Si se cae, el próximo barco sale en 12 días y hay un cliente de Dubai con el 30% pagado.',
+        'La factura EC-1187 de Cedar Shisha (Beirut) por USD 38.600 venció hace 8 días y el pago no aparece en la cuenta. El cliente dice que ya transfirió pero no manda comprobante. Wali no libera el próximo contenedor —ya con booking— hasta que se aclare, y avisa que el lunes lo cancela.',
       lo_que_dijeron: [
-        'El booking del contenedor MSKU7741203 vence mañana 18:00 hora Paraguay.',
-        'Si se pierde el espacio, el próximo vessel sale recién en 12 días.',
-        'El cliente de Dubai ya pagó el 30% de anticipo y pregunta por el ETD.',
-        'Con el packing list solo ya le alcanza: el resto lo empuja él desde la sede.',
+        'La factura EC-1187 de Cedar Shisha (Beirut) por USD 38.600 venció hace 8 días.',
+        'Karim dice que transfirió, pero no manda comprobante y el banco no muestra nada.',
+        'Wali no libera el próximo contenedor (ya con booking) hasta cobrar.',
+        'Si el lunes no está el pago, se cancela el booking.',
       ],
       te_piden: [
-        'Mandar el packing list final con peso neto real por pallet',
-        'Confirmar que los 18 pallets de cubo 26mm están terminados',
-        'Mandar el certificado de fumigación',
+        'Hablar con Karim y conseguir el comprobante de transferencia hoy',
+        'Confirmarle a Wali si el cliente realmente pagó',
       ],
-      preguntas_abiertas: ['¿Están terminados los 18 pallets de 26mm?'],
+      preguntas_abiertas: ['¿Karim ya transfirió de verdad?', '¿Tiene comprobante?'],
       datos_clave: [
-        { etiqueta: 'Contenedor', valor: 'MSKU7741203' },
-        { etiqueta: 'Vence', valor: 'mañana 18:00 hora Paraguay' },
-        { etiqueta: 'Pallets', valor: '18 de cubo 26mm' },
-        { etiqueta: 'Anticipo cobrado', valor: '30%' },
-      ],
-      categoria: 'logistica',
-      urgencia: 'alta',
-      motivo_urgencia: 'Vence mañana y hay plata de un cliente ya cobrada.',
-      fecha_limite: new Date(Date.now() + 86_400_000).toISOString().slice(0, 10),
-      bola_en_su_cancha: true,
-      riesgo_si_no_responde: 'Se pierde el contenedor y el embarque se atrasa 12 días con anticipo ya cobrado.',
-      sentimiento: 'apurado',
-      consejo:
-        'Rodrigo ya te escribió dos veces: mandale aunque sea el packing list ahora y avisale que el resto va en un rato, así deja de escalar.',
-      respuesta_sugerida:
-        'Rodrigo, perdón la demora. Te mando el packing list en la próxima hora con el peso neto por pallet. Los 18 pallets de 26mm están [CONFIRMAR SI TERMINADOS]. El certificado de fumigación lo pido hoy a la planta y te lo reenvío apenas lo tenga.',
-      una_linea_para_voz:
-        'Rodrigo te está esperando el packing list del contenedor: si no sale hoy, se cae el booking.',
-    },
-  },
-  {
-    conversationId: 'DEMO-qc-humedad',
-    messages: [
-      {
-        from: { name: 'Ahmad Fauzi', email: 'ahmad@pt-kelapa-jaya.co.id' },
-        to: [{ name: NOMBRE, email: YO }],
-        subject: 'Moisture test result batch KJ-0918',
-        receivedAt: hoursAgo(20),
-        body: `Dear ${NOMBRE},
-
-Result of moisture test for batch KJ-0918 as below:
-
-Moisture: 6.8%
-Ash content: 2.4%
-Burning time: 118 minutes
-Density: 1.02 g/cm3
-
-Moisture slightly above our normal 5%, because rain season last week. We can re-dry the batch, need 2 more days. Or we send as is, still under 8% limit in contract.
-
-Please advise which one you prefer. If re-dry, production of next batch will delay.
-
-Best regards,
-Ahmad`,
-      },
-    ],
-    analysis: {
-      titulo: 'Humedad alta en el lote KJ-0918',
-      quien: 'Ahmad Fauzi, de la fábrica PT Kelapa Jaya',
-      resumen:
-        'El lote KJ-0918 dio 6,8% de humedad por las lluvias, por encima del 5% habitual pero todavía debajo del límite de 8% del contrato. Ahmad ofrece dos caminos: re-secar el lote, que suma 2 días y atrasa el siguiente, o embarcarlo como está. Espera que ella elija.',
-      lo_que_dijeron: [
-        'Humedad 6,8%, ceniza 2,4%, tiempo de quemado 118 minutos, densidad 1,02 g/cm3.',
-        'La humedad subió por la temporada de lluvias de la semana pasada.',
-        'Sigue por debajo del límite de 8% que fija el contrato.',
-        'Re-secar toma 2 días más y atrasa la producción del lote siguiente.',
-      ],
-      te_piden: ['Decidir si re-secan el lote o lo mandan como está'],
-      preguntas_abiertas: ['¿Re-secamos o embarcamos así?'],
-      datos_clave: [
-        { etiqueta: 'Lote', valor: 'KJ-0918' },
-        { etiqueta: 'Humedad', valor: '6.8%' },
-        { etiqueta: 'Ceniza', valor: '2.4%' },
-        { etiqueta: 'Quemado', valor: '118 min' },
-        { etiqueta: 'Límite contractual', valor: '8%' },
-      ],
-      categoria: 'calidad',
-      urgencia: 'media',
-      motivo_urgencia: 'La fábrica frena hasta que ella decida, pero no vence hoy.',
-      fecha_limite: '',
-      bola_en_su_cancha: true,
-      riesgo_si_no_responde: 'La planta queda parada esperando la decisión y se atrasa el lote siguiente.',
-      sentimiento: 'tranquilo',
-      consejo:
-        'Como la humedad está dentro del límite, embarcá y avisale al cliente el número por adelantado: si se entera al llegar, te lo reclama.',
-      respuesta_sugerida:
-        'Hi Ahmad, thanks for the numbers. Since 6.8% is still within the 8% contract limit, please send batch KJ-0918 as is and keep the next batch on schedule. Let us flag the moisture level to the customer so there is no surprise.',
-      una_linea_para_voz:
-        'Ahmad necesita que decidas si re-secan el lote KJ-cero-nueve-dieciocho o lo mandan así.',
-    },
-  },
-  {
-    conversationId: 'DEMO-cotizacion-turquia',
-    messages: [
-      {
-        from: { name: 'Mehmet Yilmaz', email: 'mehmet@anadoluhookah.com.tr' },
-        to: [{ name: NOMBRE, email: YO }],
-        subject: 'Quotation request - 2x40HQ coconut charcoal',
-        receivedAt: hoursAgo(50),
-        body: `Hello,
-
-We are a hookah distributor in Istanbul. We need quotation for:
-- 2 x 40HQ container
-- Cube 25mm, 1kg box
-- Monthly, 12 months contract
-
-Please send FOB Surabaya and CIF Mersin price. Also MOQ and payment terms.
-
-We currently buy from another supplier but quality is not stable.
-
-Mehmet`,
-      },
-      {
-        from: { name: NOMBRE, email: YO },
-        to: [{ name: 'Mehmet Yilmaz', email: 'mehmet@anadoluhookah.com.tr' }],
-        subject: 'RE: Quotation request - 2x40HQ coconut charcoal',
-        receivedAt: hoursAgo(46),
-        body: `Hi Mehmet, thanks for reaching out. I am checking prices with our head office in Paraguay and will come back to you within 48 hours with a full quotation.`,
-      },
-    ],
-    analysis: {
-      titulo: 'Cotización para distribuidor de Estambul',
-      quien: 'Mehmet Yilmaz, distribuidor de narguile en Turquía',
-      resumen:
-        'Mehmet pide cotización por 2x40HQ mensuales durante 12 meses, cubo 25mm en caja de 1kg, con precio FOB Surabaya y CIF Mersin. Ella prometió responder en 48 horas y ya pasaron 46. Viene de otro proveedor con calidad inestable, así que es una oportunidad real.',
-      lo_que_dijeron: [
-        'Quieren 2 contenedores 40HQ por mes, contrato a 12 meses.',
-        'Producto: cubo de 25mm en caja de 1 kg.',
-        'Piden precio FOB Surabaya y CIF Mersin, más MOQ y condiciones de pago.',
-        'Hoy compran a otro proveedor pero la calidad no les es estable.',
-      ],
-      te_piden: ['Enviar la cotización completa con FOB y CIF, MOQ y términos de pago'],
-      preguntas_abiertas: ['¿Cuál es el precio FOB Surabaya?', '¿Cuál es el CIF Mersin?', '¿MOQ y términos de pago?'],
-      datos_clave: [
-        { etiqueta: 'Volumen', valor: '2 x 40HQ mensual' },
-        { etiqueta: 'Contrato', valor: '12 meses' },
-        { etiqueta: 'Producto', valor: 'Cubo 25mm, caja 1kg' },
-        { etiqueta: 'Destino', valor: 'Mersin, Turquía' },
-      ],
-      categoria: 'cotizacion',
-      urgencia: 'alta',
-      motivo_urgencia: 'Ella prometió responder en 48 horas y el plazo se cumple en 2 horas.',
-      fecha_limite: new Date().toISOString().slice(0, 10),
-      bola_en_su_cancha: true,
-      riesgo_si_no_responde: 'Queda mal en el primer contacto y se pierde un contrato anual de 24 contenedores.',
-      sentimiento: 'tranquilo',
-      consejo:
-        'Es tu primer contacto con Mehmet y ya casi vencés el plazo que vos misma pusiste. Mandá la cotización hoy aunque falte un dato, marcalo como pendiente.',
-      respuesta_sugerida:
-        'Hi Mehmet, as promised, here is our quotation: [FOB SURABAYA USD/TON], [CIF MERSIN USD/TON], MOQ 1x40HQ, payment 30% T/T advance and 70% against B/L copy. Prices valid for 15 days. Happy to send a free sample box so you can compare stability against your current supplier.',
-      una_linea_para_voz:
-        'Le prometiste una cotización a Mehmet de Turquía en cuarenta y ocho horas y el plazo se cumple hoy.',
-    },
-  },
-  {
-    conversationId: 'DEMO-pago-factura',
-    messages: [
-      {
-        from: { name: 'Claudia Ferreira', email: 'administracion@sede.com.py' },
-        to: [{ name: NOMBRE, email: YO }],
-        subject: 'Factura INV-2291 de PT Kelapa Jaya - falta tu OK',
-        receivedAt: hoursAgo(74),
-        body: `Hola, cómo va.
-
-Me llegó la factura INV-2291 de PT Kelapa Jaya por USD 41.850 correspondiente al lote de septiembre. Antes de pagar necesito que confirmes que la mercadería entró conforme y que el precio unitario coincide con lo acordado (USD 1.395 por tonelada).
-
-Tenemos 5 días de plazo antes de que empiecen a correr intereses.
-
-Gracias!
-Claudia`,
-      },
-    ],
-    analysis: {
-      titulo: 'Falta su OK para pagar la factura INV-2291',
-      quien: 'Claudia Ferreira, administración de la sede',
-      resumen:
-        'Administración tiene lista la factura INV-2291 de PT Kelapa Jaya por USD 41.850 y no la paga hasta que ella confirme que la mercadería entró conforme y que el precio unitario es el acordado. Quedan menos de 2 días del plazo de 5 antes de que corran intereses.',
-      lo_que_dijeron: [
-        'Factura INV-2291 de PT Kelapa Jaya por USD 41.850, lote de septiembre.',
-        'El precio unitario a validar es USD 1.395 por tonelada.',
-        'Hay 5 días de plazo antes de que empiecen a correr intereses.',
-      ],
-      te_piden: [
-        'Confirmar que la mercadería entró conforme',
-        'Validar que el precio unitario coincide con lo acordado',
-      ],
-      preguntas_abiertas: ['¿La mercadería entró conforme?', '¿El precio de USD 1.395/ton es el correcto?'],
-      datos_clave: [
-        { etiqueta: 'Factura', valor: 'INV-2291' },
-        { etiqueta: 'Monto', valor: 'USD 41.850' },
-        { etiqueta: 'Precio unitario', valor: 'USD 1.395 / tonelada' },
-        { etiqueta: 'Proveedor', valor: 'PT Kelapa Jaya' },
+        { etiqueta: 'Cliente', valor: 'Cedar Shisha (Beirut)' },
+        { etiqueta: 'Factura', valor: 'EC-1187' },
+        { etiqueta: 'Monto', valor: 'USD 38.600' },
+        { etiqueta: 'Vencida hace', valor: '8 días' },
       ],
       categoria: 'pago',
       urgencia: 'alta',
-      motivo_urgencia: 'El plazo de 5 días vence en menos de 2 y después corren intereses.',
-      fecha_limite: new Date(Date.now() + 2 * 86_400_000).toISOString().slice(0, 10),
+      motivo_urgencia: 'Si el lunes no entra la plata, se cae el booking del próximo contenedor.',
+      fecha_limite: enDias(3),
       bola_en_su_cancha: true,
-      riesgo_si_no_responde: 'Se pagan intereses sobre USD 41.850 y se enfría la relación con la fábrica.',
-      sentimiento: 'tranquilo',
+      riesgo_si_no_responde: 'Se cancela el embarque y la relación con el cliente y con Wali se tensa.',
+      sentimiento: 'apurado',
       consejo:
-        'Antes de dar el OK fijate que el precio unitario coincida con la última orden: si pagás de más, después es un lío recuperarlo.',
+        'Pedile a Karim el comprobante con el número de operación, no una promesa: con eso Wali libera el contenedor sin esperar a que el banco lo muestre.',
       respuesta_sugerida:
-        'Claudia, confirmo que la mercadería del lote de septiembre entró conforme y que el precio de USD 1.395 por tonelada es el acordado. Podés dar curso al pago de la INV-2291.',
-      una_linea_para_voz: 'Administración no puede pagar la factura de la fábrica hasta que le des el OK, y vence en dos días.',
+        'Hi Karim, hope you are well. Our factory is holding the next container until invoice EC-1187 (USD 38,600) is confirmed as paid. Could you please send me the SWIFT/transfer receipt today? With the operation number we can release the shipment right away.',
+      una_linea_para_voz:
+        'El pago de Cedar Shisha de Beirut no entró y Wali frena el próximo contenedor: necesita que le consigas el comprobante hoy.',
     },
   },
   {
-    conversationId: 'DEMO-muestras-alemania',
+    conversationId: 'DEMO-tablas-envio',
     messages: [
       {
-        from: { name: NOMBRE, email: YO },
-        to: [{ name: 'Lena Hoffmann', email: 'l.hoffmann@shishaimport.de' }],
-        subject: 'Samples sent - tracking DHL 8842190377',
-        receivedAt: hoursAgo(190),
-        body: `Hi Lena, the sample box (cube 26mm and flat 22mm) was shipped today. DHL tracking 8842190377. Let me know your feedback once you test them.`,
-      },
-    ],
-    analysis: {
-      titulo: 'Muestras a Alemania sin respuesta hace 8 días',
-      quien: 'Lena Hoffmann, importadora en Alemania',
-      resumen:
-        'Ella mandó la caja de muestras de cubo 26mm y flat 22mm hace 8 días con tracking DHL y todavía no recibió ninguna devolución. La pelota está del lado de Lena, pero conviene empujar antes de que se enfríe.',
-      lo_que_dijeron: ['Se enviaron muestras de cubo 26mm y flat 22mm.', 'Tracking DHL 8842190377.'],
-      te_piden: [],
-      preguntas_abiertas: [],
-      datos_clave: [
-        { etiqueta: 'Tracking', valor: 'DHL 8842190377' },
-        { etiqueta: 'Muestras', valor: 'Cubo 26mm y flat 22mm' },
-      ],
-      categoria: 'muestra',
-      urgencia: 'baja',
-      motivo_urgencia: 'No hay plazo, pero ya pasaron 8 días sin devolución.',
-      fecha_limite: '',
-      bola_en_su_cancha: false,
-      riesgo_si_no_responde: 'La oportunidad se enfría si nadie vuelve a tocar el tema.',
-      sentimiento: 'tranquilo',
-      consejo:
-        'Lena no contesta hace ocho días. Un empujón corto reactiva la venta; si esperás más, se enfría del todo.',
-      respuesta_sugerida:
-        'Hi Lena, just following up on the sample box (DHL 8842190377) — did it arrive well? Curious to hear how the 26mm cube performed in your burn test.',
-      una_linea_para_voz: 'Lena, de Alemania, todavía no te dijo nada de las muestras que mandaste hace ocho días.',
-    },
-  },
-  {
-    conversationId: 'DEMO-interno-reporte',
-    messages: [
-      {
-        from: { name: 'Rodrigo Benítez', email: 'rbenitez@sede.com.py' },
+        from: { name: 'João Ribeiro', email: 'joao@ecococo.co.id' },
         to: [{ name: NOMBRE, email: YO }],
-        subject: 'Reporte mensual de producción - recordatorio',
-        receivedAt: hoursAgo(30),
-        body: `Che, no te olvides del reporte de producción del mes que va a directorio. Lo necesito el viernes a más tardar. Con las toneladas producidas por tipo de cubo y el rechazo de calidad alcanza.`,
+        subject: 'No me cuadran el packing list y la factura del ECC-4471',
+        receivedAt: hoursAgo(6),
+        body: `Hola Valeria,
+
+Estoy por cerrar los documentos del contenedor ECC-4471 y las tablas no coinciden:
+
+- Packing list: 1.150 cajas
+- Factura comercial: 1.200 cajas
+- Diferencia de peso neto: 210 kg entre las dos planillas
+
+El despachante necesita los documentos mañana temprano para emitir el B/L. No puedo mandar así porque en aduana rebota. ¿Cuál es el número bueno, 1.150 o 1.200? ¿Reviso yo la carga o me confirmás vos desde la orden?
+
+Abrazo,
+João`,
       },
     ],
     analysis: {
-      titulo: 'Reporte mensual de producción para el viernes',
-      quien: 'Rodrigo Benítez, de la sede en Paraguay',
+      titulo: 'El packing list y la factura del contenedor no cuadran',
+      quien: 'João Ribeiro, encargado de envíos en ecococo',
       resumen:
-        'Rodrigo le recuerda el reporte mensual de producción que va a directorio. Lo necesita el viernes con toneladas producidas por tipo de cubo y el porcentaje de rechazo de calidad. No es urgente hoy pero tiene fecha fija.',
+        'João está por cerrar los documentos del contenedor ECC-4471 y las tablas no coinciden: el packing list dice 1.150 cajas y la factura 1.200, con 210 kg de diferencia de peso neto. El despachante necesita los papeles mañana temprano para el B/L y si no cuadran, aduana los rebota.',
       lo_que_dijeron: [
-        'El reporte va a directorio.',
-        'Se necesita el viernes a más tardar.',
-        'Alcanza con toneladas por tipo de cubo y el rechazo de calidad.',
+        'Packing list: 1.150 cajas; factura comercial: 1.200 cajas.',
+        'Hay 210 kg de diferencia de peso neto entre las dos planillas.',
+        'El despachante necesita los documentos mañana temprano para emitir el B/L.',
+        'Si no cuadran, en aduana rebotan.',
       ],
-      te_piden: ['Mandar el reporte mensual de producción antes del viernes'],
-      preguntas_abiertas: [],
-      datos_clave: [{ etiqueta: 'Entrega', valor: 'Viernes' }],
+      te_piden: [
+        'Definir cuál es el número correcto de cajas (1.150 o 1.200)',
+        'Decir si revisa él la carga o confirmás vos desde la orden',
+      ],
+      preguntas_abiertas: ['¿1.150 o 1.200 cajas?', '¿De dónde salió la diferencia de 210 kg?'],
+      datos_clave: [
+        { etiqueta: 'Contenedor', valor: 'ECC-4471' },
+        { etiqueta: 'Packing list', valor: '1.150 cajas' },
+        { etiqueta: 'Factura', valor: '1.200 cajas' },
+        { etiqueta: 'Dif. peso', valor: '210 kg' },
+      ],
+      categoria: 'logistica',
+      urgencia: 'alta',
+      motivo_urgencia: 'Los documentos van al despachante mañana temprano y sin cuadrar rebotan en aduana.',
+      fecha_limite: enDias(1),
+      bola_en_su_cancha: true,
+      riesgo_si_no_responde: 'Se emite un B/L con datos que no cierran y la carga se traba en aduana.',
+      sentimiento: 'apurado',
+      consejo:
+        'Cruzá el número contra la orden de compra antes de decidir: casi siempre la que está mal es la factura, y si emitís el B/L con el dato equivocado después corregirlo es un lío.',
+      respuesta_sugerida:
+        'João, dame 10 minutos que cruzo las cajas contra la orden ECC-4471 y te confirmo el número bueno. No emitas nada hasta que te pase el dato para que no rebote en aduana.',
+      una_linea_para_voz:
+        'A João no le cuadran el packing list y la factura del contenedor, y los papeles van mañana al despachante.',
+    },
+  },
+  {
+    conversationId: 'DEMO-precios-usa',
+    messages: [
+      {
+        from: { name: 'Mike Sullivan', email: 'mike@lightupcoals.com' },
+        to: [{ name: NOMBRE, email: YO }],
+        subject: 'Price increase 8% - we need justification before we sign',
+        receivedAt: hoursAgo(28),
+        body: `Hi ${NOMBRE},
+
+We received the new price list with an 8% increase across all cube and hexagonal sizes. Before we renew the contract we need to understand why. Our competitor from Indonesia is holding last year's price.
+
+We move 4x40HQ per month, so this is a big jump for us. Two questions:
+1) What is driving the 8%? Coconut shell cost?
+2) Can we get a volume tier if we commit to 5x40HQ per month?
+
+We like your quality but I need something to show my finance team.
+
+Mike`,
+      },
+    ],
+    analysis: {
+      titulo: 'Cliente de USA frena por la suba de precios del 8%',
+      quien: 'Mike Sullivan, distribuidor en Estados Unidos',
+      resumen:
+        'Mike recibió la nueva lista con un 8% de aumento en todos los tamaños de cubo y hexagonal y no firma la renovación hasta entender por qué. Mueve 4x40HQ por mes y su competidor indonesio mantiene el precio del año pasado. Pide justificación (¿costo de la cáscara de coco?) y un precio por volumen si sube a 5x40HQ mensuales.',
+      lo_que_dijeron: [
+        'Llegó la nueva lista con 8% de aumento en cubo y hexagonal.',
+        'El competidor de Indonesia mantiene el precio del año pasado.',
+        'Mueven 4x40HQ por mes; es un salto grande para ellos.',
+        'Piden justificación del aumento y un escalón por volumen a 5x40HQ.',
+      ],
+      te_piden: [
+        'Explicar qué motiva el aumento del 8%',
+        'Ofrecer un precio por volumen si suben a 5x40HQ mensuales',
+      ],
+      preguntas_abiertas: ['¿Qué justifica la suba?', '¿Hay margen para un descuento por volumen?'],
+      datos_clave: [
+        { etiqueta: 'Aumento', valor: '8%' },
+        { etiqueta: 'Volumen actual', valor: '4 x 40HQ / mes' },
+        { etiqueta: 'Ofrecen subir a', valor: '5 x 40HQ / mes' },
+        { etiqueta: 'Mercado', valor: 'Estados Unidos' },
+      ],
+      categoria: 'precios',
+      urgencia: 'media',
+      motivo_urgencia: 'Es un cliente grande a punto de renovar; si se enfría se va al competidor.',
+      fecha_limite: '',
+      bola_en_su_cancha: true,
+      riesgo_si_no_responde: 'Pierde un contrato de 48 contenedores al año contra un competidor más barato.',
+      sentimiento: 'tranquilo',
+      consejo:
+        'Dale un motivo concreto (subió la cáscara de coco) y un premio por volumen: si baja a 5% con el compromiso de 5x40HQ, gana el cliente sin regalar margen.',
+      respuesta_sugerida:
+        'Hi Mike, thanks for the honest note. The 8% comes mostly from the rise in raw coconut shell cost this season plus freight. Here is what I can do: if you commit to 5x40HQ per month, I can bring the increase down to 5% and lock it for 12 months. I will also send the burn-time and ash comparison vs your current supplier for your finance team.',
+      una_linea_para_voz:
+        'Mike, el cliente grande de Estados Unidos, no firma la renovación hasta que le expliques la suba del 8%.',
+    },
+  },
+  {
+    conversationId: 'DEMO-gastos-flete',
+    messages: [
+      {
+        from: { name: 'João Ribeiro', email: 'joao@ecococo.co.id' },
+        to: [{ name: NOMBRE, email: YO }],
+        subject: 'Sobrecosto en el flete del último embarque - necesito tu OK',
+        receivedAt: hoursAgo(34),
+        body: `Valeria,
+
+El forwarder nos facturó USD 1.240 de más sobre el flete que estaba cotizado en el último embarque:
+
+- 3 días de demurrage en el puerto de Surabaya: USD 840
+- Aumento de THC (manipuleo en terminal): USD 400
+
+Dicen que la demora fue porque los documentos llegaron tarde. Yo tengo los correos y la carga estuvo lista a tiempo, así que la demora no fue nuestra. ¿Lo pago para no trabar la próxima carga, o lo peleamos con el forwarder? Si lo pago, me come el margen de ese contenedor.
+
+João`,
+      },
+    ],
+    analysis: {
+      titulo: 'Sobrecosto de flete que se come el margen',
+      quien: 'João Ribeiro, encargado de envíos en ecococo',
+      resumen:
+        'El forwarder facturó USD 1.240 de más sobre el flete cotizado: USD 840 por 3 días de demurrage en Surabaya y USD 400 por aumento de THC. Dicen que la demora fue por documentos tarde, pero João tiene los correos que muestran que la carga estuvo lista a tiempo. Pregunta si pagar para no trabar la próxima o pelearlo, porque le come el margen del contenedor.',
+      lo_que_dijeron: [
+        'Sobrecosto total de USD 1.240 sobre el flete cotizado.',
+        'USD 840 de demurrage (3 días en Surabaya) y USD 400 de aumento de THC.',
+        'El forwarder dice que la demora fue por documentos tarde.',
+        'João tiene los correos que prueban que la carga estuvo lista a tiempo.',
+      ],
+      te_piden: ['Decidir si pagar el sobrecosto o disputarlo con el forwarder'],
+      preguntas_abiertas: ['¿La demora fue nuestra o del forwarder?'],
+      datos_clave: [
+        { etiqueta: 'Sobrecosto', valor: 'USD 1.240' },
+        { etiqueta: 'Demurrage', valor: '3 días · USD 840' },
+        { etiqueta: 'THC', valor: 'USD 400' },
+        { etiqueta: 'Puerto', valor: 'Surabaya' },
+      ],
+      categoria: 'gastos',
+      urgencia: 'media',
+      motivo_urgencia: 'Cuanto más se demora el reclamo, más difícil es que el forwarder reconozca la culpa.',
+      fecha_limite: '',
+      bola_en_su_cancha: true,
+      riesgo_si_no_responde: 'Se paga un sobrecosto que no era nuestro y se pierde margen del contenedor.',
+      sentimiento: 'tranquilo',
+      consejo:
+        'Con los correos que tiene João, reclamale al forwarder el demurrage antes de pagar: si la carga estuvo lista a tiempo, ese USD 840 no es tuyo.',
+      respuesta_sugerida:
+        'João, mandame los correos donde se ve que la carga estuvo lista a tiempo y armamos el reclamo formal al forwarder por los USD 840 de demurrage. El THC lo vemos aparte. No pagues el demurrage hasta que respondan.',
+      una_linea_para_voz:
+        'El forwarder cobró mil doscientos cuarenta dólares de más por una demora que no fue nuestra, y João necesita que decidas si lo pagás o lo peleás.',
+    },
+  },
+  {
+    conversationId: 'DEMO-reclamo-brasil',
+    messages: [
+      {
+        from: { name: 'Bruno Almeida', email: 'bruno@brasacoco.com.br' },
+        to: [{ name: NOMBRE, email: YO }],
+        subject: 'Reclamação - briquetes hexagonais chegaram quebrados',
+        receivedAt: hoursAgo(16),
+        body: `Oi ${NOMBRE},
+
+Recebemos o último embarque e tivemos um problema: cerca de 15% dos briquetes hexagonais chegaram quebrados ou virados pó. As caixas do fundo do pallet foram as mais afetadas.
+
+Estou enviando fotos por WhatsApp. Isso é um lote grande para nós e o cliente final já reclamou. Preciso de uma solução: nota de crédito ou reposição no próximo embarque.
+
+Podemos falar hoje?
+
+Bruno`,
+      },
+    ],
+    analysis: {
+      titulo: 'Reclamo de Brasil: briquetas hexagonales rotas',
+      quien: 'Bruno Almeida, cliente en Brasil',
+      resumen:
+        'Bruno recibió el último embarque con cerca del 15% de las briquetas hexagonales rotas o hechas polvo, sobre todo en las cajas del fondo del pallet. Ya le reclamó el cliente final. Manda fotos por WhatsApp y pide una solución: nota de crédito o reposición en el próximo embarque. Quiere hablar hoy.',
+      lo_que_dijeron: [
+        'Cerca del 15% de las briquetas hexagonales llegaron rotas o hechas polvo.',
+        'Las cajas más afectadas fueron las del fondo del pallet.',
+        'El cliente final de Bruno ya reclamó.',
+        'Pide nota de crédito o reposición en el próximo embarque.',
+      ],
+      te_piden: ['Dar una solución: nota de crédito o reposición', 'Estar disponible para hablar hoy'],
+      preguntas_abiertas: ['¿De qué lote es?', '¿Fue tema de estiba o de producción?'],
+      datos_clave: [
+        { etiqueta: 'Roto', valor: '~15%' },
+        { etiqueta: 'Formato', valor: 'Hexagonal' },
+        { etiqueta: 'Zona', valor: 'Cajas del fondo del pallet' },
+        { etiqueta: 'Cliente', valor: 'Brasil' },
+      ],
+      categoria: 'calidad',
+      urgencia: 'alta',
+      motivo_urgencia: 'Es un cliente grande, ya le reclamó su propio cliente y quiere respuesta hoy.',
+      fecha_limite: enDias(1),
+      bola_en_su_cancha: true,
+      riesgo_si_no_responde: 'Se pierde un cliente grande y se dañó la marca frente a su cliente final.',
+      sentimiento: 'apurado',
+      consejo:
+        'Pedile las fotos y el número de lote antes de prometer nada: si fue estiba, lo cubrís rápido; si fue producción, lo hablás con João y Wali con el dato en la mano.',
+      respuesta_sugerida:
+        'Oi Bruno, lamento o problema. Me manda as fotos e o número do lote das caixas afetadas? Com isso avalio hoje mesmo com a fábrica se foi estiva ou produção e te confirmo a solução (nota de crédito ou reposição). Posso te ligar às 15h.',
+      una_linea_para_voz:
+        'Bruno, de Brasil, reclama que el 15% de las briquetas hexagonales llegaron rotas y quiere una solución hoy.',
+    },
+  },
+  {
+    conversationId: 'DEMO-conciliacion',
+    messages: [
+      {
+        from: { name: 'Sr. Wali', email: 'wali@ecococo.co.id' },
+        to: [{ name: NOMBRE, email: YO }],
+        subject: 'Conciliación de septiembre - los números no cierran',
+        receivedAt: hoursAgo(31),
+        body: `Valeria,
+
+Necesito la conciliación de septiembre para el directorio del viernes. Cuando cruzo las tres tablas —ventas facturadas, pagos recibidos y gastos de embarque— me quedan unos USD 6.000 sin explicar. Puede ser algún flete que cargamos doble o un pago parcial de un cliente que no anotamos.
+
+¿Podés revisar y dejarlo cerrado antes del viernes? Prefiero llegar al directorio con los números cuadrados y no con un agujero.
+
+Gracias,
+Wali`,
+      },
+    ],
+    analysis: {
+      titulo: 'Conciliación de septiembre con USD 6.000 sin explicar',
+      quien: 'Sr. Wali, jefe de la fábrica ecococo',
+      resumen:
+        'Wali necesita la conciliación de septiembre para el directorio del viernes. Al cruzar ventas facturadas, pagos recibidos y gastos de embarque le quedan unos USD 6.000 sin explicar —quizás un flete cargado doble o un pago parcial no anotado— y quiere llegar con los números cuadrados.',
+      lo_que_dijeron: [
+        'La conciliación de septiembre va al directorio del viernes.',
+        'Al cruzar ventas, pagos recibidos y gastos de embarque quedan USD 6.000 sin explicar.',
+        'Puede ser un flete cargado doble o un pago parcial de un cliente sin anotar.',
+      ],
+      te_piden: ['Revisar y dejar cerrada la conciliación antes del viernes'],
+      preguntas_abiertas: ['¿De dónde salen los USD 6.000?'],
+      datos_clave: [
+        { etiqueta: 'Diferencia', valor: 'USD 6.000' },
+        { etiqueta: 'Entrega', valor: 'Viernes (directorio)' },
+        { etiqueta: 'Tablas', valor: 'Ventas · pagos · gastos' },
+      ],
       categoria: 'interno',
       urgencia: 'media',
-      motivo_urgencia: 'Tiene fecha fija y lo ve el directorio.',
+      motivo_urgencia: 'Va al directorio el viernes y hoy los números no cierran.',
       fecha_limite: '',
       bola_en_su_cancha: true,
-      riesgo_si_no_responde: 'El directorio se queda sin el número del mes.',
+      riesgo_si_no_responde: 'El directorio ve un agujero de USD 6.000 sin explicar.',
       sentimiento: 'tranquilo',
       consejo:
-        'El reporte va a directorio: dejalo listo un día antes, no sobre la hora, que ahí siempre aparece algo urgente.',
-      respuesta_sugerida: 'Dale Rodrigo, el viernes lo tenés. Va con toneladas por tipo de cubo y el rechazo de calidad.',
-      una_linea_para_voz: 'Rodrigo te recuerda el reporte de producción para el viernes.',
+        'Empezá por los fletes con sobrecosto (como el de Surabaya): las diferencias de conciliación casi siempre salen de un gasto cargado dos veces o de un pago parcial que no se anotó.',
+      respuesta_sugerida:
+        'Wali, me pongo con la conciliación hoy. Voy a cruzar primero los fletes con sobrecosto y los pagos parciales de clientes, que suele ser de ahí. Te lo dejo cerrado el jueves para que llegues tranquilo al directorio.',
+      una_linea_para_voz:
+        'Wali necesita la conciliación de septiembre para el viernes y le quedan seis mil dólares sin explicar.',
     },
   },
 ];
